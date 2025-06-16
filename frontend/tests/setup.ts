@@ -70,7 +70,7 @@ jest.mock('axios', () => ({
 }));
 
 // Mock global para React Native
-global.__DEV__ = true;
+(global as any).__DEV__ = true;
 
 // Timeout para testes
 jest.setTimeout(10000); 

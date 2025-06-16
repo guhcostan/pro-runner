@@ -1,0 +1,44 @@
+[build]
+  # Diretório de publicação após o build
+  publish = "dist"
+  
+  # Comando para build
+  command = "npm run build:web"
+  
+  # Diretório base (não necessário se o netlify.toml está na raiz do projeto)
+  # base = "frontend"
+
+[build.environment]
+  # Configurar Node.js versão
+  NODE_VERSION = "20"
+  
+  # Configurar npm versão
+  NPM_VERSION = "10"
+
+# Configuração para SPA (Single Page Application)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers de segurança
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Cache para assets estáticos
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache para service worker
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate" 

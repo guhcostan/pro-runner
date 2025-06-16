@@ -1,0 +1,175 @@
+const { supabase } = require('../config/supabase.js');
+const { userCreateSchema } = require('../validation/schemas.js');
+
+/**
+ * Cria um novo usuário
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const createUser = async (req, res) => {
+  try {
+    // Validação dos dados
+    const { error: validationError, value: validatedData } = userCreateSchema.validate(req.body);
+    
+    if (validationError) {
+      return res.status(400).json({
+        error: 'Dados inválidos',
+        details: validationError.details.map(detail => detail.message)
+      });
+    }
+
+    // Insere usuário no Supabase
+    const { data: user, error: dbError } = await supabase
+      .from('users')
+      .insert([{
+        name: validatedData.name,
+        height: validatedData.height,
+        weight: validatedData.weight,
+        personal_record_5k: validatedData.personal_record_5k,
+        goal: validatedData.goal,
+        auth_user_id: validatedData.auth_user_id,
+        created_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Database error:', dbError);
+      return res.status(500).json({
+        error: 'Erro ao criar usuário',
+        message: 'Não foi possível salvar os dados no banco'
+      });
+    }
+
+    res.status(201).json({
+      message: 'Usuário criado com sucesso',
+      user: {
+        id: user.id,
+        name: user.name,
+        goal: user.goal,
+        created_at: user.created_at
+      }
+    });
+
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({
+      error: 'Erro interno do servidor',
+      message: 'Algo deu errado ao processar sua solicitação'
+    });
+  }
+};
+
+/**
+ * Busca um usuário por ID
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        error: 'ID do usuário é obrigatório'
+      });
+    }
+
+    const { data: user, error: dbError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (dbError) {
+      if (dbError.code === 'PGRST116') {
+        return res.status(404).json({
+          error: 'Usuário não encontrado'
+        });
+      }
+      
+      console.error('Database error:', dbError);
+      return res.status(500).json({
+        error: 'Erro ao buscar usuário'
+      });
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        height: user.height,
+        weight: user.weight,
+        personal_record_5k: user.personal_record_5k,
+        goal: user.goal,
+        created_at: user.created_at
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({
+      error: 'Erro interno do servidor'
+    });
+  }
+};
+
+/**
+ * Busca um usuário por auth_user_id (Supabase Auth ID)
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getUserByAuthId = async (req, res) => {
+  try {
+    const { authUserId } = req.params;
+
+    if (!authUserId) {
+      return res.status(400).json({
+        error: 'Auth User ID é obrigatório'
+      });
+    }
+
+    const { data: user, error: dbError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('auth_user_id', authUserId)
+      .single();
+
+    if (dbError) {
+      if (dbError.code === 'PGRST116') {
+        return res.status(404).json({
+          error: 'Usuário não encontrado'
+        });
+      }
+      
+      console.error('Database error:', dbError);
+      return res.status(500).json({
+        error: 'Erro ao buscar usuário'
+      });
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        height: user.height,
+        weight: user.weight,
+        personal_record_5k: user.personal_record_5k,
+        goal: user.goal,
+        created_at: user.created_at
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching user by auth ID:', error);
+    res.status(500).json({
+      error: 'Erro interno do servidor'
+    });
+  }
+};
+
+module.exports = {
+  createUser,
+  getUserById,
+  getUserByAuthId
+}; 

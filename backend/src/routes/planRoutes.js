@@ -1,5 +1,5 @@
 const express = require('express');
-const { createPlan, getPlanByUserId, updateWorkoutProgress } = require('../controllers/planController.js');
+const { createPlan, getPlanByUserId, updateWorkoutProgress } = require('../controllers/planController_new.js');
 
 const router = express.Router();
 

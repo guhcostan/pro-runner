@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: prorunner-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+    autoDeploy: true
+    branch: main
+    repo: https://github.com/YOUR_USERNAME/ProRunner  # Substituir pela URL do seu repositório
+    rootDir: backend 

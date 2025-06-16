@@ -192,10 +192,10 @@ function generateWeeklyWorkouts(weeklyVolume, fitnessInfo, goal, weekNumber) {
  */
 function generateIntervalWorkout(distance, fitnessLevel) {
   const intervals = {
-    'iniciante': `Aquecimento 2km + 4x400m (recuperação 200m caminhada) + desaquecimento 1km`,
-    'iniciante_intermediário': `Aquecimento 2km + 6x400m (recuperação 200m trote) + desaquecimento 1km`,
-    'intermediário': `Aquecimento 2km + 5x800m (recuperação 400m trote) + desaquecimento 1km`,
-    'avançado': `Aquecimento 2km + 6x1000m (recuperação 400m trote) + desaquecimento 2km`
+    'iniciante': 'Aquecimento 2km + 4x400m (recuperação 200m caminhada) + desaquecimento 1km',
+    'iniciante_intermediário': 'Aquecimento 2km + 6x400m (recuperação 200m trote) + desaquecimento 1km',
+    'intermediário': 'Aquecimento 2km + 5x800m (recuperação 400m trote) + desaquecimento 1km',
+    'avançado': 'Aquecimento 2km + 6x1000m (recuperação 400m trote) + desaquecimento 2km'
   };
   
   return intervals[fitnessLevel];

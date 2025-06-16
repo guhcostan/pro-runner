@@ -27,8 +27,8 @@ app.use('/api/motivational', motivationalRoutes);
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ 
-    status: 'OK', 
-    message: 'ProRunner API is running',
+    status: 'ok', 
+    service: 'ProRunner API',
     timestamp: new Date().toISOString()
   });
 });
@@ -47,7 +47,13 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 ProRunner API server running on port ${PORT}`);
-  console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
-}); 
+// Only start server if this file is run directly (not imported)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 ProRunner API server running on port ${PORT}`);
+    console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+  });
+}
+
+// Export app for testing
+module.exports = app; 

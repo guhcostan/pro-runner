@@ -131,13 +131,13 @@ export default function WeeklyCalendar({
                   <View
                     style={[
                       styles.workoutDot,
-                      { backgroundColor: workoutColor }
+                      { backgroundColor: workoutColor || ProRunnerColors.primary }
                     ]}
                   />
                   <View
                     style={[
                       styles.workoutLine,
-                      { backgroundColor: workoutColor }
+                      { backgroundColor: workoutColor || ProRunnerColors.primary }
                     ]}
                   />
                 </View>

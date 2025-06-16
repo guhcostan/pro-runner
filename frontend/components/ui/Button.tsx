@@ -24,7 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   textStyle,
 }) => {
   const getButtonStyle = () => {
-    const baseStyle = [styles.button, styles[size]];
+    const baseStyle: ViewStyle[] = [styles.button, styles[size]];
     
     switch (variant) {
       case 'primary':
@@ -46,7 +46,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const getTextStyle = () => {
-    const baseStyle = [styles.text, styles[`${size}Text`]];
+    const baseStyle: TextStyle[] = [styles.text, styles[`${size}Text` as keyof typeof styles]];
     
     switch (variant) {
       case 'primary':
@@ -69,7 +69,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <TouchableOpacity
-      style={[...getButtonStyle(), style]}
+      style={[getButtonStyle(), style]}
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.7}
@@ -77,7 +77,7 @@ export const Button: React.FC<ButtonProps> = ({
       {loading ? (
         <ActivityIndicator color={variant === 'primary' ? '#fff' : ProRunnerColors.primary} />
       ) : (
-        <Text style={[...getTextStyle(), textStyle]}>{title}</Text>
+        <Text style={[getTextStyle(), textStyle]}>{title}</Text>
       )}
     </TouchableOpacity>
   );

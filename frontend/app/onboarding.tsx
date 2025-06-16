@@ -160,7 +160,7 @@ export default function OnboardingScreen() {
         return (
           <OnboardingStep3_5
             selectedFrequency={formData.weekly_frequency}
-            onSelectFrequency={(frequency) => updateFormData('weekly_frequency', frequency.toString())}
+            onSelectFrequency={(frequency: number) => updateFormData('weekly_frequency', frequency.toString())}
             onNext={handleNext}
             onBack={handleBack}
           />

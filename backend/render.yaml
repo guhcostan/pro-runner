@@ -17,7 +17,8 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
+      - key: CORS_ORIGIN
+        value: "*"
     autoDeploy: true
     branch: main
-    repo: https://github.com/YOUR_USERNAME/ProRunner  # Substituir pela URL do seu repositório
     rootDir: backend 

@@ -8,7 +8,38 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "expo lint",
+    "lint:fix": "expo lint --fix",
+    "typecheck": "tsc --noEmit",
+    "build:web": "expo export -p web",
+    "build:android": "eas build --platform android",
+    "build:ios": "eas build --platform ios",
+    "preview": "expo start --web"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)"
+    ],
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.ts"],
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.{ts,tsx}",
+      "<rootDir>/**/__tests__/**/*.{ts,tsx}"
+    ],
+    "collectCoverageFrom": [
+      "app/**/*.{ts,tsx}",
+      "components/**/*.{ts,tsx}",
+      "services/**/*.{ts,tsx}",
+      "store/**/*.{ts,tsx}",
+      "hooks/**/*.{ts,tsx}",
+      "!**/*.d.ts",
+      "!**/node_modules/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"]
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -50,7 +81,13 @@
     "@types/react": "~19.0.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
-    "typescript": "~5.8.3"
+    "typescript": "~5.8.3",
+    "jest": "^29.7.0",
+    "jest-expo": "~53.0.0",
+    "@testing-library/react-native": "^12.4.2",
+    "@testing-library/jest-native": "^5.4.3",
+    "react-test-renderer": "19.0.0",
+    "@types/jest": "^29.5.8"
   },
   "private": true,
   "packageManager": "yarn@1.22.22"

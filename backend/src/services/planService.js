@@ -1,4 +1,4 @@
-const { evaluate } = require('mathjs');
+// Removido import não utilizado: evaluate
 
 /**
  * Converte tempo MM:SS para segundos
@@ -240,7 +240,7 @@ function generateWeeklyWorkouts(weeklyVolume, fitnessInfo, goal, weekNumber, wee
         type: 'regenerativo',
         title: 'Corrida Leve',
         distance: Math.round(weeklyVolume * 0.15),
-        description: `Corrida muito leve para começar a semana. Ritmo bem confortável.`,
+        description: 'Corrida muito leve para começar a semana. Ritmo bem confortável.',
         intensity: 'muito_fácil'
       });
     }
@@ -251,7 +251,7 @@ function generateWeeklyWorkouts(weeklyVolume, fitnessInfo, goal, weekNumber, wee
         type: 'regenerativo',
         title: 'Corrida de Recuperação',
         distance: Math.round(weeklyVolume * 0.1),
-        description: `Corrida curta de recuperação antes do fim de semana.`,
+        description: 'Corrida curta de recuperação antes do fim de semana.',
         intensity: 'muito_fácil'
       });
     }

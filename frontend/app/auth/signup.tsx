@@ -7,6 +7,7 @@ import {
   Platform,
   Alert,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -88,58 +89,65 @@ export default function SignupScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Começar sua jornada! 🚀</Text>
-            <Text style={styles.subtitle}>
-              Crie sua conta para acessar planos personalizados
-            </Text>
+        <ScrollView 
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.title}>Começar sua jornada! 🚀</Text>
+              <Text style={styles.subtitle}>
+                Crie sua conta para acessar planos personalizados
+              </Text>
+            </View>
+
+            <View style={styles.form}>
+              <Input
+                label="Email"
+                value={formData.email}
+                onChangeText={(value) => updateFormData('email', value)}
+                placeholder="seu@email.com"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                error={errors.email}
+              />
+
+              <Input
+                label="Senha"
+                value={formData.password}
+                onChangeText={(value) => updateFormData('password', value)}
+                placeholder="••••••••"
+                secureTextEntry
+                error={errors.password}
+              />
+
+              <Input
+                label="Confirmar Senha"
+                value={formData.confirmPassword}
+                onChangeText={(value) => updateFormData('confirmPassword', value)}
+                placeholder="••••••••"
+                secureTextEntry
+                error={errors.confirmPassword}
+              />
+
+              <Button
+                title="Criar Conta"
+                onPress={handleSignup}
+                loading={isLoading}
+                style={styles.signupButton}
+              />
+            </View>
+
+            <View style={styles.footer}>
+              <Text style={styles.footerText}>Já tem uma conta?</Text>
+              <TouchableOpacity onPress={() => router.push('/auth/login')}>
+                <Text style={styles.linkText}> Fazer login</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-
-          <View style={styles.form}>
-            <Input
-              label="Email"
-              value={formData.email}
-              onChangeText={(value) => updateFormData('email', value)}
-              placeholder="seu@email.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              error={errors.email}
-            />
-
-            <Input
-              label="Senha"
-              value={formData.password}
-              onChangeText={(value) => updateFormData('password', value)}
-              placeholder="••••••••"
-              secureTextEntry
-              error={errors.password}
-            />
-
-            <Input
-              label="Confirmar Senha"
-              value={formData.confirmPassword}
-              onChangeText={(value) => updateFormData('confirmPassword', value)}
-              placeholder="••••••••"
-              secureTextEntry
-              error={errors.confirmPassword}
-            />
-
-            <Button
-              title="Criar Conta"
-              onPress={handleSignup}
-              loading={isLoading}
-              style={styles.signupButton}
-            />
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Já tem uma conta?</Text>
-            <TouchableOpacity onPress={() => router.push('/auth/login')}>
-              <Text style={styles.linkText}> Fazer login</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -153,12 +161,19 @@ const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
   },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   content: {
     flex: 1,
     paddingHorizontal: 24,
     paddingTop: 60,
     paddingBottom: 40,
     justifyContent: 'space-between',
+    minHeight: 700, // Altura mínima maior devido aos 3 campos
   },
   header: {
     alignItems: 'center',

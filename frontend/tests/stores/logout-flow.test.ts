@@ -78,21 +78,21 @@ describe('Logout Flow', () => {
       // Set initial authenticated state
       act(() => {
         authHook.result.current.setUser({ id: 'test-id' } as any);
+        authHook.result.current.setSession({ user: { id: 'test-id' } } as any);
       });
 
-      // Attempt logout
+      // Verify initial authenticated state
+      expect(authHook.result.current.isAuthenticated).toBe(true);
+
+      // Attempt logout - should not throw error due to try/catch in signOut
       await act(async () => {
-        try {
-          await authHook.result.current.signOut();
-                 } catch (error: any) {
-           // Expected to catch the error
-           expect(error.message).toBe('Network error');
-         }
+        await authHook.result.current.signOut();
       });
 
       // Should still clear local state even if Supabase fails
       expect(authHook.result.current.isAuthenticated).toBe(false);
       expect(authHook.result.current.user).toBeNull();
+      expect(authHook.result.current.session).toBeNull();
     });
   });
 

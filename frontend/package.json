@@ -24,7 +24,9 @@
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg)"
     ],
-    "setupFilesAfterEnv": ["<rootDir>/tests/setup.ts"],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.ts"
+    ],
     "testMatch": [
       "<rootDir>/tests/**/*.test.{ts,tsx}",
       "<rootDir>/**/__tests__/**/*.{ts,tsx}"
@@ -39,7 +41,11 @@
       "!**/node_modules/**"
     ],
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"]
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ]
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -62,6 +68,7 @@
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.5",
     "expo-system-ui": "~5.0.8",
+    "expo-updates": "~0.28.14",
     "expo-web-browser": "~14.1.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -78,16 +85,16 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^12.4.2",
+    "@types/jest": "^29.5.8",
     "@types/react": "~19.0.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
-    "typescript": "~5.8.3",
     "jest": "^29.7.0",
     "jest-expo": "~53.0.0",
-    "@testing-library/react-native": "^12.4.2",
-    "@testing-library/jest-native": "^5.4.3",
     "react-test-renderer": "19.0.0",
-    "@types/jest": "^29.5.8"
+    "typescript": "~5.8.3"
   },
   "private": true,
   "packageManager": "yarn@1.22.22"

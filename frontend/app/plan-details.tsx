@@ -91,11 +91,16 @@ export default function PlanDetailsScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
+        <TouchableOpacity 
+          onPress={() => router.back()}
+          style={styles.headerButton}
+        >
           <Ionicons name="arrow-back" size={24} color={ProRunnerColors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Detalhes do Plano</Text>
-        <View style={{ width: 24 }} />
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.headerTitle}>Detalhes do Plano</Text>
+        </View>
+        <View style={styles.headerButton} />
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -227,6 +232,16 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: ProRunnerColors.border,
+  },
+  headerButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,

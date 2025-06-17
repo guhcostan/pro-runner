@@ -17,6 +17,7 @@ import { useUserStore } from '../../store/userStore';
 import { apiService } from '../../services/api';
 import { t, getCurrentLanguage } from '../../constants/i18n';
 import { locationService, LocationData, WeatherData } from '../../services/location';
+import { getGoalDisplayName } from '../../lib/utils';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -273,7 +274,7 @@ export default function HomeScreen() {
           <View style={styles.headerContent}>
             <Text style={styles.greeting}>Olá, {user.name}! 👋</Text>
             <Text style={styles.planInfo}>
-              {plan ? `Plano: ${plan.goal.replace(/_/g, ' ')}` : 'Configurando seu plano...'}
+              {plan ? `Plano: ${getGoalDisplayName(plan.goal)}` : 'Configurando seu plano...'}
             </Text>
           </View>
         </View>

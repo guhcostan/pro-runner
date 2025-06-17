@@ -3,7 +3,7 @@ import { User, TrainingPlan } from '../store/userStore';
 
 // Configure the base URL - update this to match your backend URL
 const API_BASE_URL = __DEV__ 
-  ? 'http://localhost:3000/api' 
+  ? 'http://192.168.0.51:3000/api' 
   : 'https://pro-runner.onrender.com/api';
 
 const api = axios.create({

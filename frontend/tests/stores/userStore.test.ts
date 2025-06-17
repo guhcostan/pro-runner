@@ -18,6 +18,7 @@ describe('UserStore', () => {
         weight: 70,
         personal_record_5k: '25:00',
         goal: 'fazer_5km',
+        weekly_frequency: 3,
         created_at: '2024-01-01T00:00:00Z'
       };
 
@@ -42,6 +43,7 @@ describe('UserStore', () => {
           weight: 70,
           personal_record_5k: '25:00',
           goal: 'fazer_5km',
+          weekly_frequency: 3,
           created_at: '2024-01-01T00:00:00Z'
         });
       });
@@ -84,6 +86,7 @@ describe('UserStore', () => {
         fitness_level: 'iniciante',
         base_pace: '5:30',
         total_weeks: 8,
+        weekly_frequency: 3,
         weeks: [],
         created_at: '2024-01-01T00:00:00Z'
       };
@@ -107,6 +110,7 @@ describe('UserStore', () => {
         fitness_level: 'iniciante',
         base_pace: '5:30',
         total_weeks: 8,
+        weekly_frequency: 3,
         weeks: [
           {
             week: 1,

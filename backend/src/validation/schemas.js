@@ -8,9 +8,12 @@ const userCreateSchema = Joi.object({
   goal: Joi.string().valid(
     'start_running',
     'run_5k',
-    'improve_time',
-    'lose_weight'
+    'run_10k',
+    'half_marathon',
+    'marathon',
+    'improve_time'
   ).required(),
+  weekly_frequency: Joi.number().integer().min(1).max(6).required(), // frequência semanal de treinos
   auth_user_id: Joi.string().uuid().optional() // Para integração com Supabase auth
 });
 

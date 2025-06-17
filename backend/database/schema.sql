@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS users (
     height INTEGER NOT NULL CHECK (height >= 100 AND height <= 250), -- em cm
     weight NUMERIC(5,2) NOT NULL CHECK (weight >= 30 AND weight <= 200), -- em kg
     personal_record_5k VARCHAR(10) NOT NULL, -- formato MM:SS
-    goal VARCHAR(50) NOT NULL CHECK (goal IN ('melhorar_tempo', 'ganhar_resistencia', 'comecar_correr', 'perder_peso', 'manter_forma')),
+    goal VARCHAR(50) NOT NULL CHECK (goal IN ('start_running', 'run_5k', 'run_10k', 'half_marathon', 'marathon', 'improve_time')),
+    weekly_frequency INTEGER NOT NULL DEFAULT 3 CHECK (weekly_frequency >= 1 AND weekly_frequency <= 6), -- frequência semanal de treinos
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

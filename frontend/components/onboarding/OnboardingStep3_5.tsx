@@ -18,6 +18,20 @@ export default function OnboardingStep3_5({
 }: OnboardingStep3_5Props) {
   const frequencies = [
     { 
+      value: 1, 
+      label: '1x por semana', 
+      description: 'Para manter o condicionamento',
+      emoji: '🚶',
+      color: '#94A3B8'
+    },
+    { 
+      value: 2, 
+      label: '2x por semana', 
+      description: 'Ótimo para quem tem pouco tempo',
+      emoji: '🏃',
+      color: '#10B981'
+    },
+    { 
       value: 3, 
       label: '3x por semana', 
       description: 'Ideal para iniciantes',

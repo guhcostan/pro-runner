@@ -9,6 +9,7 @@ export interface User {
   weight: number;
   personal_record_5k: string;
   goal: string;
+  weekly_frequency: number;
   created_at: string;
 }
 
@@ -37,6 +38,7 @@ export interface TrainingPlan {
   goal: string;
   fitness_level: string;
   base_pace: string;
+  weekly_frequency: number;
   total_weeks: number;
   weeks: Week[];
   created_at: string;

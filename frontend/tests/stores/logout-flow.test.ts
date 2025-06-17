@@ -35,6 +35,7 @@ describe('Logout Flow', () => {
         weight: 70,
         personal_record_5k: '25:00',
         goal: 'fazer_5km',
+        weekly_frequency: 3,
         created_at: '2024-01-01T00:00:00Z'
       };
 
@@ -110,6 +111,7 @@ describe('Logout Flow', () => {
           weight: 70,
           personal_record_5k: '25:00',
           goal: 'fazer_5km',
+          weekly_frequency: 3,
           created_at: '2024-01-01T00:00:00Z'
         });
       });

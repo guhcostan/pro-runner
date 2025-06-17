@@ -12,9 +12,11 @@ interface OnboardingStep2Props {
 
 const goals = [
   { id: 'start_running', title: 'Começar a Correr', subtitle: 'Dar os primeiros passos na corrida', emoji: '🚶‍♂️' },
-  { id: 'run_5k', title: '5K', subtitle: 'Conseguir correr 5km', emoji: '🎯' },
-  { id: 'improve_time', title: 'Melhorar Tempo', subtitle: 'Bater meu recorde pessoal', emoji: '⚡' },
-  { id: 'lose_weight', title: 'Perder Peso', subtitle: 'Usar a corrida para emagrecer', emoji: '🏃‍♀️' },
+  { id: 'run_5k', title: 'Correr 5km', subtitle: 'Completar minha primeira corrida de 5km', emoji: '🎯' },
+  { id: 'run_10k', title: 'Correr 10km', subtitle: 'Conquistar a distância de 10 quilômetros', emoji: '🏃‍♂️' },
+  { id: 'half_marathon', title: 'Meia Maratona', subtitle: 'Completar os 21km da meia maratona', emoji: '🏃‍♀️' },
+  { id: 'marathon', title: 'Maratona', subtitle: 'Conquistar os 42km da maratona completa', emoji: '🏆' },
+  { id: 'improve_time', title: 'Melhorar Tempo', subtitle: 'Bater meu recorde pessoal atual', emoji: '⚡' },
 ];
 
 export default function OnboardingStep2({

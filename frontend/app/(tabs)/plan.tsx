@@ -23,16 +23,15 @@ export default function PlanScreen() {
 
     // Calculate plan details based on goal
     const goalInfo = {
-      'fazer_5km': { name: '5K Plan', distance: '5K', emoji: '🎯' },
-      'fazer_10km': { name: '10K Plan', distance: '10K', emoji: '🚀' },
-      'meia_maratona': { name: 'Half Marathon Plan', distance: '21K', emoji: '🏃‍♂️' },
-      'maratona': { name: 'Marathon Plan', distance: '42K', emoji: '🏆' },
-      'melhorar_tempo_5km': { name: '5K Time Improvement', distance: '5K', emoji: '⚡' },
-      'melhorar_tempo_10km': { name: '10K Time Improvement', distance: '10K', emoji: '💨' },
-      'voltar_a_correr': { name: 'Return to Running', distance: '5K', emoji: '🔄' },
+      'start_running': { name: 'Plano Iniciante', distance: '5K', emoji: '🚶‍♂️' },
+      'run_5k': { name: 'Plano 5K', distance: '5K', emoji: '🎯' },
+      'run_10k': { name: 'Plano 10K', distance: '10K', emoji: '🚀' },
+      'half_marathon': { name: 'Plano Meia Maratona', distance: '21K', emoji: '🏃‍♂️' },
+      'marathon': { name: 'Plano Maratona', distance: '42K', emoji: '🏆' },
+      'improve_time': { name: 'Melhoria de Tempo', distance: '5K', emoji: '⚡' },
     };
 
-    const goal = goalInfo[user.goal as keyof typeof goalInfo] || goalInfo['fazer_5km'];
+    const goal = goalInfo[user.goal as keyof typeof goalInfo] || goalInfo['run_5k'];
     
     // Calculate race date (8 weeks from plan creation)
     const raceDate = new Date(plan.created_at);
@@ -212,9 +211,10 @@ export default function PlanScreen() {
                 <Text style={styles.timeBadgeText}>{planInfo.distance}</Text>
               </View>
               <Text style={styles.timeRange}>
-                {planInfo.distance === '21K' ? '1:50:00 - 1:57:00' : 
+                {planInfo.distance === '42K' ? '3:45:00 - 4:15:00' :
+                 planInfo.distance === '21K' ? '1:50:00 - 1:57:00' : 
                  planInfo.distance === '10K' ? '45:00 - 52:00' :
-                 planInfo.distance === '5K' ? '22:00 - 28:00' : '3:45:00 - 4:15:00'}
+                 planInfo.distance === '5K' ? '22:00 - 28:00' : '22:00 - 28:00'}
               </Text>
             </View>
           </View>

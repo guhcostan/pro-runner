@@ -50,9 +50,12 @@ export const translations = {
     
     // Goals
     goal_selection: 'Qual é o seu objetivo?',
-    comecar_correr: 'Começar a correr',
-    fazer_5km: 'Fazer 5km',
-    melhorar_tempo: 'Melhorar tempo',
+    start_running: 'Começar a correr',
+    run_5k: 'Correr 5km',
+    run_10k: 'Correr 10km',
+    half_marathon: 'Meia maratona',
+    marathon: 'Maratona',
+    improve_time: 'Melhorar tempo',
     perder_peso: 'Perder peso',
     
     // Frequency
@@ -125,9 +128,12 @@ export const translations = {
     
     // Goals
     goal_selection: 'What is your goal?',
-    comecar_correr: 'Start running',
-    fazer_5km: 'Run 5km',
-    melhorar_tempo: 'Improve time',
+    start_running: 'Start running',
+    run_5k: 'Run 5km',
+    run_10k: 'Run 10km',
+    half_marathon: 'Half marathon',
+    marathon: 'Marathon',
+    improve_time: 'Improve time',
     perder_peso: 'Lose weight',
     
     // Frequency

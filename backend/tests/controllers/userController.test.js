@@ -17,7 +17,8 @@ describe('User Controller', () => {
         height: 175,
         weight: 70.5,
         personal_record_5k: '25:30',
-        goal: 'Melhorar tempo dos 5k',
+        goal: 'improve_time',
+        weekly_frequency: 3,
         auth_user_id: testAuthUserId
       };
 

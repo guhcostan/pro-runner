@@ -42,6 +42,7 @@ const createUser = async (req, res) => {
         weight: validatedData.weight,
         personal_record_5k: validatedData.personal_record_5k,
         goal: validatedData.goal,
+        weekly_frequency: validatedData.weekly_frequency,
         auth_user_id: validatedData.auth_user_id,
         created_at: new Date().toISOString()
       }])
@@ -117,6 +118,7 @@ const getUserById = async (req, res) => {
         weight: user.weight,
         personal_record_5k: user.personal_record_5k,
         goal: user.goal,
+        weekly_frequency: user.weekly_frequency,
         created_at: user.created_at
       }
     });
@@ -184,6 +186,7 @@ const getUserByAuthId = async (req, res) => {
         weight: user.weight,
         personal_record_5k: user.personal_record_5k,
         goal: user.goal,
+        weekly_frequency: user.weekly_frequency,
         created_at: user.created_at
       }
     });

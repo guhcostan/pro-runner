@@ -83,50 +83,50 @@ export default function LoginScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.content}>
-            <View style={styles.header}>
-              <Text style={styles.title}>Bem-vindo de volta! 🏃‍♂️</Text>
-              <Text style={styles.subtitle}>
-                Faça login para continuar sua jornada
-              </Text>
-            </View>
-
-            <View style={styles.form}>
-              <Input
-                label="Email"
-                value={formData.email}
-                onChangeText={(value) => updateFormData('email', value)}
-                placeholder="seu@email.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                error={errors.email}
-              />
-
-              <Input
-                label="Senha"
-                value={formData.password}
-                onChangeText={(value) => updateFormData('password', value)}
-                placeholder="••••••••"
-                secureTextEntry
-                error={errors.password}
-              />
-
-              <Button
-                title="Entrar"
-                onPress={handleLogin}
-                loading={isLoading}
-                style={styles.loginButton}
-              />
-            </View>
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Não tem uma conta?</Text>
-              <TouchableOpacity onPress={() => router.push('/auth/signup')}>
-                <Text style={styles.linkText}> Criar conta</Text>
-              </TouchableOpacity>
-            </View>
+      >
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Bem-vindo de volta! 🏃‍♂️</Text>
+            <Text style={styles.subtitle}>
+              Faça login para continuar sua jornada
+            </Text>
           </View>
+
+          <View style={styles.form}>
+            <Input
+              label="Email"
+              value={formData.email}
+              onChangeText={(value) => updateFormData('email', value)}
+              placeholder="seu@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              error={errors.email}
+            />
+
+            <Input
+              label="Senha"
+              value={formData.password}
+              onChangeText={(value) => updateFormData('password', value)}
+              placeholder="••••••••"
+              secureTextEntry
+              error={errors.password}
+            />
+
+            <Button
+              title="Entrar"
+              onPress={handleLogin}
+              loading={isLoading}
+              style={styles.loginButton}
+            />
+          </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Não tem uma conta?</Text>
+            <TouchableOpacity onPress={() => router.push('/auth/signup')}>
+              <Text style={styles.linkText}> Criar conta</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

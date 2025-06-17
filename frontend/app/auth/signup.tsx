@@ -91,59 +91,59 @@ export default function SignupScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.content}>
-            <View style={styles.header}>
-              <Text style={styles.title}>Começar sua jornada! 🚀</Text>
-              <Text style={styles.subtitle}>
+      >
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Começar sua jornada! 🚀</Text>
+            <Text style={styles.subtitle}>
                 Crie sua conta e comece a treinar imediatamente
-              </Text>
-            </View>
-
-            <View style={styles.form}>
-              <Input
-                label="Email"
-                value={formData.email}
-                onChangeText={(value) => updateFormData('email', value)}
-                placeholder="seu@email.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                error={errors.email}
-              />
-
-              <Input
-                label="Senha"
-                value={formData.password}
-                onChangeText={(value) => updateFormData('password', value)}
-                placeholder="••••••••"
-                secureTextEntry
-                error={errors.password}
-              />
-
-              <Input
-                label="Confirmar Senha"
-                value={formData.confirmPassword}
-                onChangeText={(value) => updateFormData('confirmPassword', value)}
-                placeholder="••••••••"
-                secureTextEntry
-                error={errors.confirmPassword}
-              />
-
-              <Button
-                title="Criar Conta"
-                onPress={handleSignup}
-                loading={isLoading}
-                style={styles.signupButton}
-              />
-            </View>
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Já tem uma conta?</Text>
-              <TouchableOpacity onPress={() => router.push('/auth/login')}>
-                <Text style={styles.linkText}> Fazer login</Text>
-              </TouchableOpacity>
-            </View>
+            </Text>
           </View>
+
+          <View style={styles.form}>
+            <Input
+              label="Email"
+              value={formData.email}
+              onChangeText={(value) => updateFormData('email', value)}
+              placeholder="seu@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              error={errors.email}
+            />
+
+            <Input
+              label="Senha"
+              value={formData.password}
+              onChangeText={(value) => updateFormData('password', value)}
+              placeholder="••••••••"
+              secureTextEntry
+              error={errors.password}
+            />
+
+            <Input
+              label="Confirmar Senha"
+              value={formData.confirmPassword}
+              onChangeText={(value) => updateFormData('confirmPassword', value)}
+              placeholder="••••••••"
+              secureTextEntry
+              error={errors.confirmPassword}
+            />
+
+            <Button
+              title="Criar Conta"
+              onPress={handleSignup}
+              loading={isLoading}
+              style={styles.signupButton}
+            />
+          </View>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Já tem uma conta?</Text>
+            <TouchableOpacity onPress={() => router.push('/auth/login')}>
+              <Text style={styles.linkText}> Fazer login</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

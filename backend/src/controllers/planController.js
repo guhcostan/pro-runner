@@ -57,12 +57,12 @@ async function createPlan(req, res) {
           });
         }
       } else {
-        return res.status(409).json({
-          error: 'Plano já existe para este usuário',
+      return res.status(409).json({
+        error: 'Plano já existe para este usuário',
           message: 'Um plano de treino já foi gerado. Use force=true para recriar.',
           plan_id: existingPlans[0].id,
           created_at: existingPlans[0].created_at
-        });
+      });
       }
     }
 
@@ -158,16 +158,16 @@ async function getPlanByUserId(req, res) {
       .single();
 
     const formattedPlans = plans.map(plan => ({
-      id: plan.id,
-      user_id: plan.user_id,
-      user_name: user?.name,
-      goal: plan.goal,
-      fitness_level: plan.fitness_level,
-      base_pace: plan.base_pace,
-      total_weeks: plan.total_weeks,
+        id: plan.id,
+        user_id: plan.user_id,
+        user_name: user?.name,
+        goal: plan.goal,
+        fitness_level: plan.fitness_level,
+        base_pace: plan.base_pace,
+        total_weeks: plan.total_weeks,
       weekly_frequency: plan.weekly_frequency || 3,
-      weeks: plan.plan_data,
-      created_at: plan.created_at
+        weeks: plan.plan_data,
+        created_at: plan.created_at
     }));
 
     res.json({
@@ -251,7 +251,7 @@ async function updateWorkoutProgress(req, res) {
       error: 'Erro interno do servidor'
     });
   }
-}
+} 
 
 module.exports = {
   createPlan,

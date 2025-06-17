@@ -32,47 +32,47 @@ export default function OnboardingStep1({
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.header}>
-          <Text style={styles.emoji}>👋</Text>
-          <Text style={styles.title}>Vamos nos conhecer!</Text>
-          <Text style={styles.subtitle}>
-            Primeiro, me conte um pouco sobre você
-          </Text>
-        </View>
+      <View style={styles.header}>
+        <Text style={styles.emoji}>👋</Text>
+        <Text style={styles.title}>Vamos nos conhecer!</Text>
+        <Text style={styles.subtitle}>
+          Primeiro, me conte um pouco sobre você
+        </Text>
+      </View>
 
-        <View style={styles.form}>
-          <Input
-            label="Como você se chama?"
-            value={formData.name}
-            onChangeText={(value) => onUpdateField('name', value)}
-            placeholder="Seu nome"
-            error={errors.name}
-          />
-
-          <Input
-            label="Qual sua altura? (cm)"
-            value={formData.height}
-            onChangeText={(value) => onUpdateField('height', value)}
-            placeholder="170"
-            keyboardType="numeric"
-            error={errors.height}
-          />
-
-          <Input
-            label="Qual seu peso? (kg)"
-            value={formData.weight}
-            onChangeText={(value) => onUpdateField('weight', value)}
-            placeholder="70"
-            keyboardType="numeric"
-            error={errors.weight}
-          />
-        </View>
-
-        <Button
-          title="Próximo"
-          onPress={onNext}
-          style={styles.nextButton}
+      <View style={styles.form}>
+        <Input
+          label="Como você se chama?"
+          value={formData.name}
+          onChangeText={(value) => onUpdateField('name', value)}
+          placeholder="Seu nome"
+          error={errors.name}
         />
+
+        <Input
+          label="Qual sua altura? (cm)"
+          value={formData.height}
+          onChangeText={(value) => onUpdateField('height', value)}
+          placeholder="170"
+          keyboardType="numeric"
+          error={errors.height}
+        />
+
+        <Input
+          label="Qual seu peso? (kg)"
+          value={formData.weight}
+          onChangeText={(value) => onUpdateField('weight', value)}
+          placeholder="70"
+          keyboardType="numeric"
+          error={errors.weight}
+        />
+      </View>
+
+      <Button
+        title="Próximo"
+        onPress={onNext}
+        style={styles.nextButton}
+      />
       </ScrollView>
     </KeyboardAvoidingView>
   );

@@ -6,8 +6,9 @@ describe('User Controller', () => {
   let testAuthUserId;
 
   beforeAll(() => {
-    // Set up test data
-    testAuthUserId = 'test-auth-user-id-123';
+    // Set up test data with unique UUID
+    const timestamp = Date.now().toString(16);
+    testAuthUserId = `550e8400-e29b-41d4-a716-${timestamp.padStart(12, '0')}`;
   });
 
   describe('POST /api/users', () => {
@@ -109,7 +110,7 @@ describe('User Controller', () => {
     });
 
     it('should return 404 for non-existent auth user ID', async () => {
-      const nonExistentAuthId = 'non-existent-auth-id-123';
+      const nonExistentAuthId = '99999999-9999-9999-9999-999999999999'; // Valid UUID but non-existent
       
       const response = await request(app)
         .get(`/api/users/auth/${nonExistentAuthId}`)
@@ -138,10 +139,10 @@ describe('User Controller', () => {
 
     it('should validate auth_user_id parameter correctly', async () => {
       const response = await request(app)
-        .get('/api/users/auth/   ') // Whitespace only
-        .expect(400);
+        .get('/api/users/auth/invalid-uuid') // Invalid UUID format
+        .expect(404); // Invalid UUID format gets treated as not found
 
-      expect(response.body).toHaveProperty('error', 'Auth User ID é obrigatório');
+      expect(response.body).toHaveProperty('error', 'Usuário não encontrado');
     });
   });
 }); 

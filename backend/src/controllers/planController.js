@@ -1,12 +1,12 @@
-import { supabase } from '../config/supabase.js';
-import { generateTrainingPlan } from '../services/planService.js';
+const { supabase } = require('../config/supabase.js');
+const { generateTrainingPlan } = require('../services/planService.js');
 
 /**
  * Gera e salva um plano de treino para o usuário
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-export async function createPlan(req, res) {
+async function createPlan(req, res) {
   try {
     const { userId } = req.body;
 
@@ -64,6 +64,7 @@ export async function createPlan(req, res) {
         fitness_level: trainingPlan.fitness_level,
         base_pace: trainingPlan.base_pace,
         total_weeks: trainingPlan.total_weeks,
+        weekly_frequency: trainingPlan.weekly_frequency,
         plan_data: trainingPlan.weeks,
         created_at: trainingPlan.created_at
       }])
@@ -87,6 +88,7 @@ export async function createPlan(req, res) {
         fitness_level: savedPlan.fitness_level,
         base_pace: savedPlan.base_pace,
         total_weeks: savedPlan.total_weeks,
+        weekly_frequency: savedPlan.weekly_frequency,
         weeks: savedPlan.plan_data,
         created_at: savedPlan.created_at
       }
@@ -106,7 +108,7 @@ export async function createPlan(req, res) {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-export async function getPlanByUserId(req, res) {
+async function getPlanByUserId(req, res) {
   try {
     const { userId } = req.params;
 
@@ -117,23 +119,21 @@ export async function getPlanByUserId(req, res) {
     }
 
     // Busca o plano de treino
-    const { data: plan, error: planError } = await supabase
+    const { data: plans, error: planError } = await supabase
       .from('training_plans')
       .select('*')
-      .eq('user_id', userId)
-      .single();
+      .eq('user_id', userId);
 
     if (planError) {
-      if (planError.code === 'PGRST116') {
-        return res.status(404).json({
-          error: 'Plano não encontrado',
-          message: 'Nenhum plano de treino foi gerado para este usuário'
-        });
-      }
-      
       console.error('Database error:', planError);
       return res.status(500).json({
         error: 'Erro ao buscar plano de treino'
+      });
+    }
+
+    if (!plans || plans.length === 0) {
+      return res.status(404).json({
+        error: 'Nenhum plano encontrado para este usuário'
       });
     }
 
@@ -144,18 +144,21 @@ export async function getPlanByUserId(req, res) {
       .eq('id', userId)
       .single();
 
+    const formattedPlans = plans.map(plan => ({
+      id: plan.id,
+      user_id: plan.user_id,
+      user_name: user?.name,
+      goal: plan.goal,
+      fitness_level: plan.fitness_level,
+      base_pace: plan.base_pace,
+      total_weeks: plan.total_weeks,
+      weekly_frequency: plan.weekly_frequency || 3,
+      weeks: plan.plan_data,
+      created_at: plan.created_at
+    }));
+
     res.json({
-      plan: {
-        id: plan.id,
-        user_id: plan.user_id,
-        user_name: user?.name,
-        goal: plan.goal,
-        fitness_level: plan.fitness_level,
-        base_pace: plan.base_pace,
-        total_weeks: plan.total_weeks,
-        weeks: plan.plan_data,
-        created_at: plan.created_at
-      }
+      plans: formattedPlans
     });
 
   } catch (error) {
@@ -171,7 +174,7 @@ export async function getPlanByUserId(req, res) {
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-export async function updateWorkoutProgress(req, res) {
+async function updateWorkoutProgress(req, res) {
   try {
     const { planId } = req.params;
     const { week, workoutIndex, completed, notes } = req.body;
@@ -235,4 +238,10 @@ export async function updateWorkoutProgress(req, res) {
       error: 'Erro interno do servidor'
     });
   }
-} 
+}
+
+module.exports = {
+  createPlan,
+  getPlanByUserId,
+  updateWorkoutProgress
+}; 

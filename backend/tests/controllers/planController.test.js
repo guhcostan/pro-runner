@@ -58,7 +58,7 @@ describe('Plan Controller', () => {
         .send({})
         .expect(400);
 
-      expect(response.body).toHaveProperty('error', 'Dados inválidos');
+      expect(response.body).toHaveProperty('error', 'ID do usuário é obrigatório');
     });
 
     it('should return 404 for non-existent user', async () => {

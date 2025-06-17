@@ -108,7 +108,8 @@ describe('PlanService', () => {
         height: 175,
         weight: 70,
         personal_record_5k: '22:00',
-        goal: 'fazer_5km'
+        goal: 'run_5k',
+        weekly_frequency: 4 // Para garantir que teremos tiros
       };
 
       const plan = planService.generateTrainingPlan(userData);
@@ -117,7 +118,7 @@ describe('PlanService', () => {
       // Verificar se diferentes tipos de treino estão presentes
       const workoutTypes = firstWeek.workouts.map(workout => workout.type);
       expect(workoutTypes).toContain('longao');
-      expect(workoutTypes).toContain('tiros');
+      expect(workoutTypes).toContain('tiros'); // Só aparece com frequency >= 4
       expect(workoutTypes).toContain('tempo');
       expect(workoutTypes).toContain('regenerativo');
     });
@@ -128,7 +129,8 @@ describe('PlanService', () => {
         height: 175,
         weight: 70,
         personal_record_5k: '22:00',
-        goal: 'fazer_5km'
+        goal: 'run_5k',
+        weekly_frequency: 4 // Para garantir intensidade alta
       };
 
       const plan = planService.generateTrainingPlan(userData);
@@ -138,7 +140,7 @@ describe('PlanService', () => {
       
       // Deve ter diferentes intensidades
       expect(intensities).toContain('fácil');
-      expect(intensities).toContain('alta');
+      expect(intensities).toContain('alta'); // Só aparece com frequency >= 4 (tiros)
       expect(intensities).toContain('moderada');
       expect(intensities).toContain('muito_fácil');
     });

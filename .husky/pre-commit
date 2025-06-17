@@ -1,7 +1,7 @@
 echo "🔍 Executando verificações de qualidade..."
 
-# Executa lint-staged para arquivos alterados
-npx lint-staged
+npm run lint
+npm run typecheck
 
 # Se chegou até aqui, tudo passou
 echo "✅ Todas as verificações passaram!"

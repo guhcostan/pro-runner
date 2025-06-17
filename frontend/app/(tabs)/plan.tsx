@@ -149,6 +149,18 @@ export default function PlanScreen() {
           <TouchableOpacity 
             style={styles.actionButton}
             onPress={() => {
+              router.push('/complete-plan' as any);
+            }}
+          >
+            <View style={styles.actionIcon}>
+              <Text style={styles.actionIconText}>📅</Text>
+            </View>
+            <Text style={styles.actionText}>Plano Completo</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => {
               router.push('/plan-details');
             }}
           >

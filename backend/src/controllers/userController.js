@@ -37,6 +37,7 @@ const createUser = async (req, res) => {
             weight: validatedData.weight,
             personal_record_5k: validatedData.personal_record_5k,
             goal: validatedData.goal,
+            goal_date: validatedData.goal_date,
             weekly_frequency: validatedData.weekly_frequency,
             updated_at: new Date().toISOString()
           })
@@ -61,6 +62,7 @@ const createUser = async (req, res) => {
             weight: updatedUser.weight,
             personal_record_5k: updatedUser.personal_record_5k,
             goal: updatedUser.goal,
+            goal_date: updatedUser.goal_date,
             weekly_frequency: updatedUser.weekly_frequency,
             created_at: updatedUser.created_at
           }
@@ -77,6 +79,7 @@ const createUser = async (req, res) => {
         weight: validatedData.weight,
         personal_record_5k: validatedData.personal_record_5k,
         goal: validatedData.goal,
+        goal_date: validatedData.goal_date,
         weekly_frequency: validatedData.weekly_frequency,
         auth_user_id: validatedData.auth_user_id,
         created_at: new Date().toISOString()
@@ -101,6 +104,7 @@ const createUser = async (req, res) => {
         weight: user.weight,
         personal_record_5k: user.personal_record_5k,
         goal: user.goal,
+        goal_date: user.goal_date,
         weekly_frequency: user.weekly_frequency,
         created_at: user.created_at
       }
@@ -157,6 +161,7 @@ const getUserById = async (req, res) => {
         weight: user.weight,
         personal_record_5k: user.personal_record_5k,
         goal: user.goal,
+        goal_date: user.goal_date,
         weekly_frequency: user.weekly_frequency,
         created_at: user.created_at
       }
@@ -225,6 +230,7 @@ const getUserByAuthId = async (req, res) => {
         weight: user.weight,
         personal_record_5k: user.personal_record_5k,
         goal: user.goal,
+        goal_date: user.goal_date,
         weekly_frequency: user.weekly_frequency,
         created_at: user.created_at
       }

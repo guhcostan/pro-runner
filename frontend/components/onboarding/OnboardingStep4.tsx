@@ -9,6 +9,7 @@ interface OnboardingStep4Props {
     height: string;
     weight: string;
     goal: string;
+    goal_date: Date | null;
     personal_record_5k: string;
     weekly_frequency?: number;
   };
@@ -33,6 +34,26 @@ export default function OnboardingStep4({
   isLoading,
 }: OnboardingStep4Props) {
   const bmi = (parseInt(formData.weight) / Math.pow(parseInt(formData.height) / 100, 2)).toFixed(1);
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const calculateWeeksUntilGoal = () => {
+    if (!formData.goal_date) return null;
+    const now = new Date();
+    const goal = formData.goal_date;
+    const diffTime = Math.abs(goal.getTime() - now.getTime());
+    const diffWeeks = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 7));
+    return diffWeeks;
+  };
+
+  const weeksUntilGoal = calculateWeeksUntilGoal();
 
   return (
     <View style={styles.container}>
@@ -71,6 +92,19 @@ export default function OnboardingStep4({
             <Text style={styles.goalText}>
               {goalLabels[formData.goal] || formData.goal}
             </Text>
+            {formData.goal_date && (
+              <>
+                <Text style={styles.goalDateLabel}>Data do Objetivo:</Text>
+                <Text style={styles.goalDate}>
+                  {formatDate(formData.goal_date)}
+                </Text>
+                {weeksUntilGoal && (
+                  <Text style={styles.weeksText}>
+                    {weeksUntilGoal} semanas para se preparar
+                  </Text>
+                )}
+              </>
+            )}
           </View>
 
           <View style={styles.summaryCard}>
@@ -98,10 +132,12 @@ export default function OnboardingStep4({
           <View style={styles.planPreview}>
             <Text style={styles.previewTitle}>📋 Seu Plano Incluirá:</Text>
             <View style={styles.featuresList}>
-              <Text style={styles.featureItem}>✓ Treinos personalizados por 8 semanas</Text>
+              <Text style={styles.featureItem}>✓ Treinos personalizados por {weeksUntilGoal || 8} semanas</Text>
               <Text style={styles.featureItem}>✓ 4 tipos de treino diferentes</Text>
               <Text style={styles.featureItem}>✓ Progressão gradual e segura</Text>
-              <Text style={styles.featureItem}>✓ Acompanhamento do progresso</Text>
+              {formData.goal_date && (
+                <Text style={styles.featureItem}>✓ Planejado para sua data-alvo</Text>
+              )}
               <Text style={styles.featureItem}>✓ Paces calculados automaticamente</Text>
               <Text style={styles.featureItem}>✓ Zonas de treinamento otimizadas</Text>
             </View>
@@ -272,5 +308,19 @@ const styles = StyleSheet.create({
   },
   finishButton: {
     flex: 2,
+  },
+  goalDateLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 8,
+  },
+  goalDate: {
+    fontSize: 14,
+    color: ProRunnerColors.textPrimary,
+  },
+  weeksText: {
+    fontSize: 14,
+    color: ProRunnerColors.textPrimary,
   },
 }); 

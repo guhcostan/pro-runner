@@ -8,30 +8,72 @@ interface OnboardingStep2Props {
   onSelectGoal: (goal: string) => void;
   onNext: () => void;
   onBack: () => void;
+  personalRecord5k: string; // Para determinar o nível do usuário
 }
 
-const goals = [
-  { id: 'start_running', title: 'Começar a Correr', subtitle: 'Dar os primeiros passos na corrida', emoji: '🚶‍♂️' },
-  { id: 'run_5k', title: 'Correr 5km', subtitle: 'Completar minha primeira corrida de 5km', emoji: '🎯' },
-  { id: 'run_10k', title: 'Correr 10km', subtitle: 'Conquistar a distância de 10 quilômetros', emoji: '🏃‍♂️' },
-  { id: 'half_marathon', title: 'Meia Maratona', subtitle: 'Completar os 21km da meia maratona', emoji: '🏃‍♀️' },
-  { id: 'marathon', title: 'Maratona', subtitle: 'Conquistar os 42km da maratona completa', emoji: '🏆' },
-  { id: 'improve_time', title: 'Melhorar Tempo', subtitle: 'Bater meu recorde pessoal atual', emoji: '⚡' },
-];
+// Função para determinar o nível do usuário baseado no tempo de 5k
+function getUserLevel(personalRecord5k: string): 'beginner' | 'intermediate' | 'advanced' {
+  const [minutes, seconds] = personalRecord5k.split(':').map(Number);
+  const totalSeconds = minutes * 60 + seconds;
+  const pacePerKm = totalSeconds / 5; // pace por km em segundos
+  
+  if (pacePerKm <= 240) { // < 4:00/km
+    return 'advanced';
+  } else if (pacePerKm <= 360) { // 4:00-6:00/km
+    return 'intermediate';
+  } else { // > 6:00/km
+    return 'beginner';
+  }
+}
+
+// Objetivos disponíveis por nível
+const goalsByLevel = {
+  beginner: [
+    { id: 'start_running', title: 'Começar a Correr', subtitle: 'Dar os primeiros passos na corrida', emoji: '🚶‍♂️' },
+    { id: 'run_5k', title: 'Correr 5km', subtitle: 'Completar minha primeira corrida de 5km', emoji: '🎯' },
+  ],
+  intermediate: [
+    { id: 'start_running', title: 'Começar a Correr', subtitle: 'Dar os primeiros passos na corrida', emoji: '🚶‍♂️' },
+    { id: 'run_5k', title: 'Correr 5km', subtitle: 'Completar minha primeira corrida de 5km', emoji: '🎯' },
+    { id: 'run_10k', title: 'Correr 10km', subtitle: 'Conquistar a distância de 10 quilômetros', emoji: '🏃‍♂️' },
+    { id: 'half_marathon', title: 'Meia Maratona', subtitle: 'Completar os 21km da meia maratona', emoji: '🏃‍♀️' },
+    { id: 'improve_time', title: 'Melhorar Tempo', subtitle: 'Bater meu recorde pessoal atual', emoji: '⚡' },
+  ],
+  advanced: [
+    { id: 'start_running', title: 'Começar a Correr', subtitle: 'Dar os primeiros passos na corrida', emoji: '🚶‍♂️' },
+    { id: 'run_5k', title: 'Correr 5km', subtitle: 'Completar minha primeira corrida de 5km', emoji: '🎯' },
+    { id: 'run_10k', title: 'Correr 10km', subtitle: 'Conquistar a distância de 10 quilômetros', emoji: '🏃‍♂️' },
+    { id: 'half_marathon', title: 'Meia Maratona', subtitle: 'Completar os 21km da meia maratona', emoji: '🏃‍♀️' },
+    { id: 'marathon', title: 'Maratona', subtitle: 'Conquistar os 42km da maratona completa', emoji: '🏆' },
+    { id: 'improve_time', title: 'Melhorar Tempo', subtitle: 'Bater meu recorde pessoal atual', emoji: '⚡' },
+  ],
+};
+
+// Mensagens explicativas por nível
+const levelMessages = {
+  beginner: 'Com base no seu tempo atual, estes objetivos são ideais para começar de forma segura:',
+  intermediate: 'Ótimo ritmo! Você pode escolher entre estes objetivos progressivos:',
+  advanced: 'Excelente forma física! Todos os objetivos estão disponíveis para você:',
+};
 
 export default function OnboardingStep2({
   selectedGoal,
   onSelectGoal,
   onNext,
   onBack,
+  personalRecord5k,
 }: OnboardingStep2Props) {
+  const userLevel = getUserLevel(personalRecord5k);
+  const availableGoals = goalsByLevel[userLevel];
+  const levelMessage = levelMessages[userLevel];
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.emoji}>🎯</Text>
         <Text style={styles.title}>Qual seu objetivo?</Text>
         <Text style={styles.subtitle}>
-          Vamos criar um plano personalizado para você!
+          {levelMessage}
         </Text>
       </View>
 
@@ -40,7 +82,7 @@ export default function OnboardingStep2({
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.goalsContent}
       >
-        {goals.map((goal) => (
+        {availableGoals.map((goal) => (
           <TouchableOpacity
             key={goal.id}
             style={[

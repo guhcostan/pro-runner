@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,13 @@ import {
   ScrollView,
   Alert,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
 import { ProRunnerColors } from '../../constants/Colors';
-import { Button } from '../../components/ui/Button';
 import { useUserStore } from '../../store/userStore';
 import { apiService } from '../../services/api';
 import { t, getCurrentLanguage } from '../../constants/i18n';
@@ -24,17 +24,34 @@ export default function HomeScreen() {
   const { 
     user, 
     plan, 
-    isOnboardingComplete, 
-    setPlan, 
-    updateWorkoutProgress 
+    setPlan
   } = useUserStore();
   
   const [refreshing, setRefreshing] = useState(false);
-  const [completedWorkouts, setCompletedWorkouts] = useState(0);
   const [dailyQuote, setDailyQuote] = useState<string>('');
   const [location, setLocation] = useState<LocationData | null>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [loadingWeather, setLoadingWeather] = useState(false);
+
+  const loadPlan = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const response = await apiService.getPlanByUserId(user.id);
+      setPlan(response.plan);
+    } catch (error) {
+      console.error('Error loading plan:', error);
+      Alert.alert(
+        'Erro',
+        'Não foi possível carregar seu plano de treino.',
+        [
+          {
+            text: 'Tentar Novamente',
+            onPress: () => loadPlan(),
+          },
+        ]
+      );
+    }
+  }, [user, setPlan]);
 
   useEffect(() => {
     // Se não tem usuário ou não está autenticado, deixa o app/index.tsx lidar com isso
@@ -49,28 +66,7 @@ export default function HomeScreen() {
     // Load initial data
     loadDailyQuote();
     loadLocationAndWeather();
-  }, [user, plan]);
-
-  const loadPlan = async () => {
-    if (!user) return;
-
-    try {
-      const response = await apiService.getPlanByUserId(user.id);
-      setPlan(response.plan);
-    } catch (error) {
-      console.error('Error loading plan:', error);
-      Alert.alert(
-        'Erro',
-        'Não foi possível carregar seu plano de treino.',
-        [
-          {
-            text: 'Tentar Novamente',
-            onPress: loadPlan,
-          },
-        ]
-      );
-    }
-  };
+  }, [user, plan, loadPlan]);
 
   const loadDailyQuote = async () => {
     try {
@@ -83,7 +79,6 @@ export default function HomeScreen() {
   };
 
   const loadLocationAndWeather = async () => {
-    setLoadingWeather(true);
     try {
       const userLocation = await locationService.getCurrentLocation();
       if (userLocation) {
@@ -93,8 +88,6 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error('Error loading location/weather:', error);
-    } finally {
-      setLoadingWeather(false);
     }
   };
 
@@ -141,8 +134,15 @@ export default function HomeScreen() {
 
   const getWorkoutEmoji = (type: string) => {
     const emojiMap: Record<string, string> = {
-      'regenerativo': '🌱',
+      // Novos tipos baseados na metodologia profissional
+      'easy': '🟢',
+      'interval': '⚡',
       'tempo': '🔥',
+      'long': '🏃‍♂️',
+      'recovery': '🌱',
+      'off': '😴',
+      // Tipos antigos (compatibilidade)
+      'regenerativo': '🌱',
       'longao': '🏃‍♂️',
       'tiros': '⚡',
       'velocidade': '🚀',
@@ -203,7 +203,84 @@ export default function HomeScreen() {
   const currentWorkout = getCurrentWorkout();
   const workoutPaceInfo = currentWorkout && plan?.base_pace ? 
     calculateWorkoutPace(currentWorkout.type, plan.base_pace) : null;
+
+  // Funções auxiliares para a nova estrutura VDOT
+  const getWorkoutName = (type: string) => {
+    const nameMap: Record<string, string> = {
+      'easy': 'Corrida Leve',
+      'interval': 'Treino Intervalado', 
+      'tempo': 'Treino Tempo',
+      'long': 'Corrida Longa',
+      'recovery': 'Recuperação',
+      // Compatibilidade
+      'longao': 'Corrida Longa',
+      'tiros': 'Treino Intervalado',
+      'regenerativo': 'Recuperação',
+    };
+    return nameMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
+  };
+
+  const getWorkoutZone = (type: string) => {
+    const zoneMap: Record<string, string> = {
+      'easy': 'Zona Aeróbica',
+      'long': 'Zona Aeróbica', 
+      'interval': 'Zona VO2 Max',
+      'tempo': 'Zona Limiar',
+      'recovery': 'Zona Regenerativa',
+      // Compatibilidade
+      'longao': 'Zona Aeróbica',
+      'tiros': 'Zona VO2 Max',
+      'regenerativo': 'Zona Regenerativa',
+    };
+    return zoneMap[type] || 'Zona Base';
+  };
+
+  const getWorkoutIntensity = (type: string) => {
+    const intensityMap: Record<string, string> = {
+      'easy': 'Baixa',
+      'long': 'Baixa-Moderada',
+      'interval': 'Alta', 
+      'tempo': 'Moderada-Alta',
+      'recovery': 'Muito Baixa',
+      // Compatibilidade
+      'longao': 'Baixa-Moderada',
+      'tiros': 'Alta',
+      'regenerativo': 'Muito Baixa',
+    };
+    return intensityMap[type] || 'Moderada';
+  };
+
+  const calculateEstimatedDuration = (workout: any) => {
+    // Nova estrutura VDOT
+    if (workout.workoutDetails) {
+      if (workout.workoutDetails.duration) {
+        return workout.workoutDetails.duration;
+      }
+      
+      if (workout.workoutDetails.distance && workout.workoutDetails.pace) {
+        const distance = workout.workoutDetails.distance;
+        const paceString = workout.workoutDetails.pace;
+        const [minutes, seconds] = paceString.split(':').map(Number);
+        const paceInMinutes = minutes + (seconds / 60);
+        return Math.round(distance * paceInMinutes);
+      }
+      
+      if (workout.workoutDetails.intervals) {
+        const intervals = workout.workoutDetails.intervals;
+        const intervalDuration = workout.workoutDetails.intervalDuration;
+        const recoveryTime = workout.workoutDetails.recoveryTime || 2;
+        
+        const totalIntervalTime = intervals * intervalDuration;
+        const totalRecoveryTime = (intervals - 1) * recoveryTime;
+        return 15 + totalIntervalTime + totalRecoveryTime; // 15min = aquec + desaq
+      }
+    }
     
+    // Fallback para estrutura antiga
+    const distance = workout.distance || 0;
+    return Math.round(distance * 6); // 6 min/km estimado
+  };
+
   // Calculate progress based on current week
   const getCurrentWeekProgress = () => {
     if (!plan || !plan.weeks || plan.weeks.length === 0) {
@@ -230,19 +307,7 @@ export default function HomeScreen() {
 
   const weekProgress = getCurrentWeekProgress();
 
-  const handleStartWorkout = () => {
-    if (currentWorkout) {
-      // Mark current workout as completed
-      // This would normally update the plan via API
-      setCompletedWorkouts(prev => Math.min(prev + 1, weekProgress.total));
-      Alert.alert('Parabéns! 🎉', 'Treino registrado com sucesso!');
-    }
-  };
 
-  const handleResetWeek = () => {
-    setCompletedWorkouts(0);
-    Alert.alert('Semana resetada', 'Contadores reiniciados!');
-  };
 
   if (!user) {
     return (
@@ -285,104 +350,135 @@ export default function HomeScreen() {
             <Text style={styles.sectionTitle}>Próximo Treino</Text>
             
             <View style={styles.workoutCard}>
-              <View style={styles.workoutIcon}>
-                <Text style={styles.workoutEmoji}>{currentWorkout.emoji}</Text>
-              </View>
-              
-              <Text style={styles.workoutTitle}>
-                {currentWorkout.title || currentWorkout.type.charAt(0).toUpperCase() + currentWorkout.type.slice(1)}
-              </Text>
-              <Text style={styles.workoutDistance}>
-                {currentWorkout.distance}km • {currentWorkout.day}
-              </Text>
-              
-              {/* Workout Details */}
-              <View style={styles.workoutDetailsContainer}>
-                {workoutPaceInfo && (
-                  <View style={styles.workoutDetail}>
-                    <Text style={styles.detailLabel}>Pace Alvo:</Text>
-                    <Text style={styles.detailValue}>{workoutPaceInfo.pace}/km</Text>
-                  </View>
-                )}
+              <View style={styles.workoutHeader}>
+                <View style={styles.workoutIcon}>
+                  <Text style={styles.workoutEmoji}>{currentWorkout.emoji}</Text>
+                </View>
                 
-                {workoutPaceInfo && (
-                  <View style={styles.workoutDetail}>
-                    <Text style={styles.detailLabel}>Zona:</Text>
-                    <Text style={styles.detailZone}>{workoutPaceInfo.zone}</Text>
-                  </View>
-                )}
-                
-                <View style={styles.workoutDetail}>
-                  <Text style={styles.detailLabel}>Intensidade:</Text>
-                  <Text style={styles.detailValue}>{currentWorkout.intensity}</Text>
+                <View style={styles.workoutMainInfo}>
+                  <Text style={styles.workoutTitle}>
+                    {getWorkoutName(currentWorkout.type)}
+                  </Text>
+                                      <Text style={styles.workoutDistance}>
+                     {currentWorkout.workoutDetails ? 
+                       (currentWorkout.workoutDetails.distance ? `${currentWorkout.workoutDetails.distance}km` :
+                        currentWorkout.workoutDetails.duration ? `${currentWorkout.workoutDetails.duration}min` :
+                        currentWorkout.workoutDetails.intervals ? `${currentWorkout.workoutDetails.intervals}x${currentWorkout.workoutDetails.intervalDuration}min` :
+                        'Treino') :
+                       'Treino'
+                     } • {currentWorkout.day}
+                  </Text>
                 </View>
               </View>
               
-              {currentWorkout.description && (
-                <View style={styles.workoutDescription}>
-                  <Text style={styles.descriptionTitle}>Descrição:</Text>
-                  <Text style={styles.descriptionText}>{currentWorkout.description}</Text>
+              {/* Enhanced Workout Details */}
+              <View style={styles.workoutDetailsContainer}>
+                <View style={styles.workoutDetailRow}>
+                  <View style={styles.workoutDetail}>
+                    <Text style={styles.detailLabel}>Pace Alvo</Text>
+                    <Text style={styles.detailValue}>
+                      {currentWorkout.workoutDetails?.pace || workoutPaceInfo?.pace || '5:12'}/km
+                    </Text>
+                  </View>
+                  <View style={styles.workoutDetail}>
+                    <Text style={styles.detailLabel}>Zona</Text>
+                    <Text style={styles.detailZone}>
+                      {getWorkoutZone(currentWorkout.type)}
+                    </Text>
+                  </View>
+                </View>
+                
+                <View style={styles.workoutDetailRow}>
+                  <View style={styles.workoutDetail}>
+                    <Text style={styles.detailLabel}>Intensidade</Text>
+                    <Text style={styles.detailValue}>
+                      {getWorkoutIntensity(currentWorkout.type)}
+                    </Text>
+                  </View>
+                  <View style={styles.workoutDetail}>
+                    <Text style={styles.detailLabel}>Duração Est.</Text>
+                    <Text style={styles.detailValue}>
+                      ~{calculateEstimatedDuration(currentWorkout)} min
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              
+              {/* Short Description */}
+              {(currentWorkout.workoutDetails?.description || currentWorkout.detailedDescription) && (
+                <View style={styles.workoutSummary}>
+                  <Text style={styles.summaryText} numberOfLines={2}>
+                    {currentWorkout.workoutDetails?.description || currentWorkout.detailedDescription}
+                  </Text>
                 </View>
               )}
-              
-              <Button
-                title="🏃‍♂️ Começar Treino"
-                onPress={handleStartWorkout}
-                style={styles.startButton}
-              />
+
+              {/* Action Button */}
+              <TouchableOpacity 
+                style={styles.fullWidthDetailButton}
+                onPress={() => {
+                  router.push({
+                    pathname: '/workout-detail',
+                    params: {
+                      workout: JSON.stringify(currentWorkout),
+                      week: '1',
+                      dayName: currentWorkout.day
+                    }
+                  });
+                }}
+              >
+                <Text style={styles.startButtonText}>📋 Ver Detalhes do Treino</Text>
+              </TouchableOpacity>
+
+              {/* Hint about workout details */}
+              <View style={styles.workoutDetailHint}>
+                <Text style={styles.workoutDetailHintText}>
+                  💡 No detalhe do treino você encontra aquecimentos sugeridos, estrutura completa e dicas específicas!
+                </Text>
+              </View>
             </View>
           </View>
         )}
 
-        {/* Week Completed - Moved up */}
-        {!currentWorkout && weekProgress.percentage >= 100 && (
-          <View style={styles.completedSection}>
+        {/* No workout available */}
+        {!currentWorkout && (
+          <View style={styles.noWorkoutSection}>
             <View style={styles.workoutIcon}>
-              <Text style={styles.workoutEmoji}>🏆</Text>
+              <Text style={styles.workoutEmoji}>📅</Text>
             </View>
-            <Text style={styles.completedTitle}>Parabéns!</Text>
-            <Text style={styles.completedSubtitle}>
-              Você completou sua meta semanal de {weekProgress.total} treinos!
+            <Text style={styles.noWorkoutTitle}>Plano em dia!</Text>
+            <Text style={styles.noWorkoutSubtitle}>
+              Consulte o &ldquo;Plano Completo&rdquo; para ver todos os seus treinos programados.
             </Text>
-            
-            <Button
-              title="🔄 Nova Semana"
-              onPress={handleResetWeek}
-              style={styles.resetButton}
-            />
           </View>
         )}
 
-        {/* Week Progress */}
+        {/* Week Overview */}
         <View style={styles.progressSection}>
-          <Text style={styles.sectionTitle}>Resumo da Semana</Text>
+          <Text style={styles.sectionTitle}>Visão Geral da Semana</Text>
           
           <View style={styles.progressCard}>
             <View style={styles.progressHeader}>
               <Text style={styles.progressTitle}>
-                {weekProgress.completed} de {weekProgress.total} treinos
+                {weekProgress.total} treinos programados
               </Text>
-              <Text style={styles.progressPercentage}>
-                {Math.round(weekProgress.percentage)}%
-              </Text>
-            </View>
-            
-            <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, { width: `${weekProgress.percentage}%` as any }]} />
+                              <Text style={styles.progressPercentage}>
+                  Semana {(plan?.weeks?.findIndex(week => week.workouts.some(w => !w.completed)) ?? 0) + 1}
+                </Text>
             </View>
             
             <View style={styles.progressStats}>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{weekProgress.completed}</Text>
-                <Text style={styles.statLabel}>Concluídos</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{weekProgress.total - weekProgress.completed}</Text>
-                <Text style={styles.statLabel}>Restantes</Text>
-              </View>
-              <View style={styles.statItem}>
                 <Text style={styles.statValue}>{weekProgress.total}</Text>
-                <Text style={styles.statLabel}>Meta</Text>
+                <Text style={styles.statLabel}>Treinos</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{plan?.weekly_frequency || 3}</Text>
+                <Text style={styles.statLabel}>x/semana</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{plan?.total_weeks || 8}</Text>
+                <Text style={styles.statLabel}>semanas</Text>
               </View>
             </View>
           </View>
@@ -391,7 +487,9 @@ export default function HomeScreen() {
         {/* Daily Motivation */}
         <View style={styles.motivationCard}>
           <Text style={styles.motivationTitle}>💫 {t('inspiration_of_day')}</Text>
-          <Text style={styles.motivationText}>{dailyQuote || t('loading')}</Text>
+          <Text style={styles.motivationalText}>
+            {dailyQuote || 'Cada quilômetro é uma vitória. Continue correndo!'}
+          </Text>
         </View>
 
         {/* Weather Card */}
@@ -609,19 +707,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   workoutDetail: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flex: 1,
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    marginBottom: 4,
     backgroundColor: ProRunnerColors.background,
     borderRadius: 8,
+    marginHorizontal: 2,
   },
   detailLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: ProRunnerColors.textSecondary,
+    marginBottom: 2,
   },
   detailValue: {
     fontSize: 14,
@@ -652,7 +750,11 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   startButton: {
-    width: '100%',
+    flex: 1,
+    backgroundColor: ProRunnerColors.primary,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
   },
   completedSection: {
     paddingHorizontal: 24,
@@ -693,7 +795,7 @@ const styles = StyleSheet.create({
     color: ProRunnerColors.primary,
     marginBottom: 8,
   },
-  motivationText: {
+  motivationalText: {
     fontSize: 16,
     color: ProRunnerColors.textPrimary,
     lineHeight: 24,
@@ -741,5 +843,111 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: ProRunnerColors.success,
     fontWeight: '500',
+  },
+  speedWorkoutHint: {
+    backgroundColor: ProRunnerColors.accent + '20',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: ProRunnerColors.accent,
+  },
+  speedHintText: {
+    fontSize: 12,
+    color: ProRunnerColors.textSecondary,
+    fontStyle: 'italic',
+  },
+  workoutDetailHint: {
+    backgroundColor: ProRunnerColors.primary + '20',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: ProRunnerColors.primary,
+  },
+  workoutDetailHintText: {
+    fontSize: 12,
+    color: ProRunnerColors.textSecondary,
+    fontStyle: 'italic',
+    lineHeight: 16,
+  },
+  // New styles for enhanced workout display
+  workoutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 20,
+  },
+  workoutMainInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  workoutDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  workoutSummary: {
+    width: '100%',
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: ProRunnerColors.background,
+    borderRadius: 8,
+  },
+  summaryText: {
+    fontSize: 14,
+    color: ProRunnerColors.textPrimary,
+    lineHeight: 20,
+  },
+  workoutActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 16,
+    gap: 12,
+  },
+  detailButton: {
+    flex: 1,
+    backgroundColor: ProRunnerColors.surface,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: ProRunnerColors.border,
+  },
+  detailButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: ProRunnerColors.textPrimary,
+  },
+  startButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: ProRunnerColors.background,
+  },
+  fullWidthDetailButton: {
+    width: '100%',
+    backgroundColor: ProRunnerColors.primary,
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  noWorkoutSection: {
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  noWorkoutTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 8,
+  },
+  noWorkoutSubtitle: {
+    fontSize: 16,
+    color: ProRunnerColors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
   },
 });

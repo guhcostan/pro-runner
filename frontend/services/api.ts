@@ -39,6 +39,7 @@ export interface CreateUserRequest {
   weight: number;
   personal_record_5k: string;
   goal: string;
+  goal_date?: string;
   auth_user_id?: string;
 }
 

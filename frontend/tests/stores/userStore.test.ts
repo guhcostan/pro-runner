@@ -85,6 +85,44 @@ describe('UserStore', () => {
         goal: 'fazer_5km',
         fitness_level: 'iniciante',
         base_pace: '5:30',
+        vdot: 35,
+        training_paces: {
+          interval: '5:30',
+          tempo: '5:45',
+          easy: '6:45',
+          long: '6:30',
+          recovery: '7:15',
+          intervalSeconds: 330,
+          tempoSeconds: 345,
+          easySeconds: 405,
+          longSeconds: 390,
+          recoverySeconds: 435
+        },
+        estimated_capabilities: {
+          vdot: 35,
+          currentMaxDistance: 10,
+          safeWeeklyVolume: 25,
+          maxLongRunStart: 8,
+          maxLongRunPeak: 12,
+          estimatedTimes: {
+            '10k': 2400,
+            'half': 5400,
+            'marathon': 11400
+          },
+          canHandle: {
+            '5k': true,
+            '10k': true,
+            'half': false,
+            'marathon': false
+          }
+        },
+        validation: {
+          isRealistic: true,
+          isIdeal: true,
+          adjustedGoal: 'fazer_5km',
+          warning: null,
+          recommendedWeeks: 8
+        },
         total_weeks: 8,
         weekly_frequency: 3,
         weeks: [],
@@ -109,6 +147,44 @@ describe('UserStore', () => {
         goal: 'fazer_5km',
         fitness_level: 'iniciante',
         base_pace: '5:30',
+        vdot: 35,
+        training_paces: {
+          interval: '5:30',
+          tempo: '5:45',
+          easy: '6:45',
+          long: '6:30',
+          recovery: '7:15',
+          intervalSeconds: 330,
+          tempoSeconds: 345,
+          easySeconds: 405,
+          longSeconds: 390,
+          recoverySeconds: 435
+        },
+        estimated_capabilities: {
+          vdot: 35,
+          currentMaxDistance: 10,
+          safeWeeklyVolume: 25,
+          maxLongRunStart: 8,
+          maxLongRunPeak: 12,
+          estimatedTimes: {
+            '10k': 2400,
+            'half': 5400,
+            'marathon': 11400
+          },
+          canHandle: {
+            '5k': true,
+            '10k': true,
+            'half': false,
+            'marathon': false
+          }
+        },
+        validation: {
+          isRealistic: true,
+          isIdeal: true,
+          adjustedGoal: 'fazer_5km',
+          warning: null,
+          recommendedWeeks: 8
+        },
         total_weeks: 8,
         weekly_frequency: 3,
         weeks: [
@@ -117,12 +193,15 @@ describe('UserStore', () => {
             volume: 10,
             workouts: [
               {
+                id: 'workout-1',
                 day: 'Segunda',
                 type: 'tempo' as const,
-                title: 'Treino Tempo',
-                distance: 5,
-                description: 'Corrida moderada',
-                intensity: 'moderada'
+                workoutDetails: {
+                  distance: 5,
+                  pace: '5:45',
+                  description: 'Corrida moderada'
+                },
+                detailedDescription: 'Treino Tempo - Corrida moderada'
               }
             ]
           }

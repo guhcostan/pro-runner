@@ -38,7 +38,14 @@ export default function ProgressScreen() {
   const completedKm = plan.weeks.reduce((total, week) => 
     total + week.workouts
       .filter(w => w.completed)
-      .reduce((km, w) => km + w.distance, 0), 0
+      .reduce((km, w) => {
+        // Nova estrutura VDOT
+        if (w.workoutDetails?.distance) {
+          return km + w.workoutDetails.distance;
+        }
+        // Fallback - estima baseado no tipo de treino
+        return km + (w.type === 'long' ? 15 : 8);
+      }, 0), 0
   );
 
   return (

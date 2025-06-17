@@ -16,7 +16,7 @@ export default function IndexScreen() {
 
   useEffect(() => {
     initialize();
-  }, []);
+  }, [initialize]);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -76,7 +76,7 @@ export default function IndexScreen() {
             console.log('📝 No plan found - going to plan generation');
             router.replace('/generating-plan');
           }
-        } catch (planError) {
+        } catch {
           console.log('📝 Plan fetch error - going to plan generation');
           router.replace('/generating-plan');
         }
@@ -88,7 +88,7 @@ export default function IndexScreen() {
     };
 
     initializeApp();
-  }, [isAuthenticated, authUser, hasInitialized]);
+  }, [isAuthenticated, authUser, hasInitialized, user, plan, router, setUser, setPlan, setOnboardingComplete]);
 
   return (
     <View style={styles.container}>

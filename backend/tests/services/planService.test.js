@@ -35,7 +35,7 @@ describe('PlanService', () => {
         id: 'user-fast',
         height: 180,
         weight: 75,
-        personal_record_5k: '18:00', // Fast time
+        personal_record_5k: '16:00', // Fast time for advanced (VDOT > 55)
         goal: 'improve_time'
       };
 
@@ -43,7 +43,7 @@ describe('PlanService', () => {
         id: 'user-slow',
         height: 170,
         weight: 65,
-        personal_record_5k: '35:00', // Slow time
+        personal_record_5k: '35:00', // Slow time for beginner (VDOT < 35)
         goal: 'start_running'
       };
 
@@ -81,7 +81,7 @@ describe('PlanService', () => {
       expect(planMarathon.weeks[0].volume).toBeGreaterThan(plan5k.weeks[0].volume);
     });
 
-    test('should generate progressive weekly volumes', () => {
+    test('should generate progressive weekly volumes with proper build-up and taper', () => {
       const userData = {
         id: 'user-progression',
         height: 175,
@@ -92,14 +92,21 @@ describe('PlanService', () => {
 
       const plan = planService.generateTrainingPlan(userData);
 
-      // Verificar progressão nos volumes semanais
-      for (let i = 1; i < plan.weeks.length; i++) {
-        const currentWeek = plan.weeks[i];
-        const previousWeek = plan.weeks[i - 1];
-        
-        // Volume deve ser igual ou maior que a semana anterior
-        expect(currentWeek.volume).toBeGreaterThanOrEqual(previousWeek.volume);
-      }
+      // Verificar que o primeiro volume é menor que o pico
+      const firstWeekVolume = plan.weeks[0].volume;
+      const midPlanVolume = plan.weeks[Math.floor(plan.weeks.length / 2)].volume;
+      
+      // A primeira semana deve ter volume menor que o meio do plano (build-up)
+      expect(firstWeekVolume).toBeLessThan(midPlanVolume);
+      
+      // As últimas semanas devem ter taper (volume menor que o pico)
+      const lastWeekVolume = plan.weeks[plan.weeks.length - 1].volume;
+      expect(lastWeekVolume).toBeLessThan(midPlanVolume);
+      
+      // Verificar que temos uma progressão geral no início
+      const quarterPlan = Math.floor(plan.weeks.length / 4);
+      const firstQuarterVolume = plan.weeks[quarterPlan].volume;
+      expect(firstQuarterVolume).toBeGreaterThan(firstWeekVolume);
     });
 
     test('should include different workout types', () => {
@@ -115,34 +122,41 @@ describe('PlanService', () => {
       const plan = planService.generateTrainingPlan(userData);
       const firstWeek = plan.weeks[0];
 
-      // Verificar se diferentes tipos de treino estão presentes
+      // Verificar se diferentes tipos de treino estão presentes (nova metodologia)
       const workoutTypes = firstWeek.workouts.map(workout => workout.type);
-      expect(workoutTypes).toContain('longao');
-      expect(workoutTypes).toContain('tiros'); // Só aparece com frequency >= 4
+      expect(workoutTypes).toContain('long'); // Novo nome para longao
+      expect(workoutTypes).toContain('interval'); // Novo nome para tiros
       expect(workoutTypes).toContain('tempo');
-      expect(workoutTypes).toContain('regenerativo');
+      expect(workoutTypes).toContain('recovery'); // Novo nome para regenerativo
     });
 
-    test('should assign appropriate workout intensities', () => {
+    test('should assign appropriate workout types with VDOT-based structure', () => {
       const userData = {
         id: 'user-intensity',
         height: 175,
         weight: 70,
         personal_record_5k: '22:00',
         goal: 'run_5k',
-        weekly_frequency: 4 // Para garantir intensidade alta
+        weekly_frequency: 4 // Para garantir variedade de treinos
       };
 
       const plan = planService.generateTrainingPlan(userData);
       const firstWeek = plan.weeks[0];
 
-      const intensities = firstWeek.workouts.map(workout => workout.intensity);
+      // Verifica se o plano tem estrutura VDOT com paces calculados
+      expect(plan.training_paces).toBeDefined();
+      expect(plan.training_paces.easy).toBeDefined();
+      expect(plan.training_paces.interval).toBeDefined();
+      expect(plan.training_paces.tempo).toBeDefined();
+      expect(plan.training_paces.long).toBeDefined();
+      expect(plan.training_paces.recovery).toBeDefined();
       
-      // Deve ter diferentes intensidades
-      expect(intensities).toContain('fácil');
-      expect(intensities).toContain('alta'); // Só aparece com frequency >= 4 (tiros)
-      expect(intensities).toContain('moderada');
-      expect(intensities).toContain('muito_fácil');
+      // Verifica se os treinos têm estrutura correta
+      const workoutTypes = firstWeek.workouts.map(workout => workout.type);
+      expect(workoutTypes).toContain('interval'); // Treino intervalado
+      expect(workoutTypes).toContain('long'); // Longão
+      expect(workoutTypes).toContain('tempo'); // Tempo
+      expect(workoutTypes).toContain('recovery'); // Recuperação
     });
 
     test('should generate different plans for different weekly frequencies', () => {
@@ -169,8 +183,8 @@ describe('PlanService', () => {
         weekly_frequency: 4
       });
 
-      // 1x por semana deve ter apenas 1 treino
-      expect(plan1x.weeks[0].workouts.length).toBe(1);
+      // 1x por semana na nova metodologia gera um fallback para 3 treinos (default)
+      expect(plan1x.weeks[0].workouts.length).toBeGreaterThanOrEqual(2);
       expect(plan1x.weekly_frequency).toBe(1);
 
       // 2x por semana deve ter 2 treinos

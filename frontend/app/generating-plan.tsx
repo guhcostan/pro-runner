@@ -17,7 +17,7 @@ import { apiService } from '../services/api';
 export default function GeneratingPlanScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { user, setPlan, isCreatingPlan, setCreatingPlan } = useUserStore();
+  const { user, setPlan, setCreatingPlan } = useUserStore();
   
   // Verifica se é uma redefinição de plano
   const isRedefining = params?.redefining === 'true';

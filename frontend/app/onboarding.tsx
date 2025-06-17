@@ -18,18 +18,12 @@ import { apiService } from '../services/api';
 
 import OnboardingStep1 from '../components/onboarding/OnboardingStep1';
 import OnboardingStep2 from '../components/onboarding/OnboardingStep2';
+import OnboardingStep2_5 from '../components/onboarding/OnboardingStep2_5';
 import OnboardingStep3 from '../components/onboarding/OnboardingStep3';
 import OnboardingStep3_5 from '../components/onboarding/OnboardingStep3_5';
 import OnboardingStep4 from '../components/onboarding/OnboardingStep4';
 
-const GOALS = [
-  { id: 'start_running', name: 'Começar a Correr', emoji: '🚶‍♂️' },
-  { id: 'run_5k', name: 'Correr 5K', emoji: '🎯' },
-  { id: 'run_10k', name: 'Correr 10K', emoji: '🚀' },
-  { id: 'half_marathon', name: 'Meia Maratona', emoji: '🏃‍♂️' },
-  { id: 'marathon', name: 'Maratona', emoji: '🏆' },
-  { id: 'improve_time', name: 'Melhorar Tempo', emoji: '⚡' },
-];
+
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -46,6 +40,7 @@ export default function OnboardingScreen() {
     weight: user?.weight?.toString() || '',
     personal_record_5k: user?.personal_record_5k || '30:00',
     goal: user?.goal || 'run_5k',
+    goal_date: null as Date | null,
     weekly_frequency: user?.weekly_frequency || 3,
   });
 
@@ -59,6 +54,7 @@ export default function OnboardingScreen() {
         weight: user.weight?.toString() || '',
         personal_record_5k: user.personal_record_5k || '30:00',
         goal: user.goal || 'run_5k',
+        goal_date: null,
         weekly_frequency: user.weekly_frequency || 3,
       });
     }
@@ -91,7 +87,7 @@ export default function OnboardingScreen() {
       }
     }
 
-    if (step >= 3) {
+    if (step >= 4) {
       const timeRegex = /^([0-5]?[0-9]):([0-5][0-9])$/;
       if (!timeRegex.test(formData.personal_record_5k)) {
         newErrors.personal_record_5k = 'Formato deve ser MM:SS (ex: 25:30)';
@@ -113,7 +109,7 @@ export default function OnboardingScreen() {
   };
 
   const handleFinish = async () => {
-    if (!validateStep(4)) return;
+    if (!validateStep(6)) return;
 
     setCreatingUser(true);
 
@@ -125,6 +121,7 @@ export default function OnboardingScreen() {
           weight: parseFloat(formData.weight),
           personal_record_5k: formData.personal_record_5k,
           goal: formData.goal,
+          goal_date: formData.goal_date?.toISOString(),
           weekly_frequency: parseInt(formData.weekly_frequency.toString()),
           auth_user_id: authUser?.id,
         };
@@ -140,6 +137,7 @@ export default function OnboardingScreen() {
           weight: parseFloat(formData.weight),
           personal_record_5k: formData.personal_record_5k,
           goal: formData.goal,
+          goal_date: formData.goal_date?.toISOString(),
           weekly_frequency: parseInt(formData.weekly_frequency.toString()),
           auth_user_id: authUser?.id,
         };
@@ -161,7 +159,7 @@ export default function OnboardingScreen() {
     }
   };
 
-  const updateFormData = (field: string, value: string) => {
+  const updateFormData = (field: string, value: string | Date | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -175,7 +173,7 @@ export default function OnboardingScreen() {
           <OnboardingStep1
             formData={formData}
             errors={errors}
-            onUpdateField={updateFormData}
+            onUpdateField={(field, value) => updateFormData(field, value)}
             onNext={handleNext}
           />
         );
@@ -186,9 +184,20 @@ export default function OnboardingScreen() {
             onSelectGoal={(goal) => updateFormData('goal', goal)}
             onNext={handleNext}
             onBack={handleBack}
+            personalRecord5k={formData.personal_record_5k}
           />
         );
       case 3:
+        return (
+          <OnboardingStep2_5
+            goalDate={formData.goal_date}
+            onSelectDate={(date) => updateFormData('goal_date', date)}
+            onNext={handleNext}
+            onBack={handleBack}
+            selectedGoal={formData.goal}
+          />
+        );
+      case 4:
         return (
           <OnboardingStep3
             personalRecord={formData.personal_record_5k}
@@ -198,7 +207,7 @@ export default function OnboardingScreen() {
             error={errors.personal_record_5k}
           />
         );
-      case 4:
+      case 5:
         return (
           <OnboardingStep3_5
             selectedFrequency={formData.weekly_frequency}
@@ -207,7 +216,7 @@ export default function OnboardingScreen() {
             onBack={handleBack}
           />
         );
-      case 5:
+      case 6:
         return (
           <OnboardingStep4
             formData={formData}
@@ -230,7 +239,7 @@ export default function OnboardingScreen() {
       >
         <View style={styles.header}>
           <View style={styles.progressBar}>
-            {[1, 2, 3, 4, 5].map((step) => (
+            {[1, 2, 3, 4, 5, 6].map((step) => (
               <View
                 key={step}
                 style={[
@@ -241,7 +250,7 @@ export default function OnboardingScreen() {
             ))}
           </View>
           <Text style={styles.stepText}>
-            Passo {currentStep} de 5
+            Passo {currentStep} de 6
           </Text>
         </View>
 

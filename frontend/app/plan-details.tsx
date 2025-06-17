@@ -1,22 +1,15 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
+import { Stack } from 'expo-router';
 
 import { ProRunnerColors } from '../constants/Colors';
 import { useUserStore } from '../store/userStore';
 import { translateFitnessLevel, getGoalDisplayName } from '../lib/utils';
 
 export default function PlanDetailsScreen() {
-  const router = useRouter();
+  // router removed as it's not being used
   const { user, plan } = useUserStore();
 
   if (!user || !plan) {
@@ -32,48 +25,64 @@ export default function PlanDetailsScreen() {
 
   const workoutTypes = [
     {
-      type: 'longao',
-      name: 'Corrida Longa',
-      emoji: '🏃‍♂️',
-      description: 'Treino de resistência aeróbica',
-      pace: 'Conversa (Z2)',
+      type: 'easy',
+      name: 'Corrida Leve',
+      emoji: '🚶‍♂️',
+      description: 'Base aeróbica e recuperação ativa',
+      pace: plan.training_paces?.easy || 'Fácil',
+      zone: 'Zona Aeróbica',
       environment: 'Rua/Parque',
-      duration: '45-90 min',
-      intensity: 'Baixa-Moderada',
-      tips: 'Mantenha um ritmo que permita conversar. Foque na duração, não na velocidade.',
+      duration: '30-60 min',
+      intensity: 'Baixa',
+      tips: 'Ritmo que permite conversa fácil. Desenvolve a base aeróbica.',
     },
     {
-      type: 'tiros',
-      name: 'Treino de Velocidade',
-      emoji: '⚡',
-      description: 'Intervalos de alta intensidade',
-      pace: 'Forte (Z4-Z5)',
-      environment: 'Pista/Rua plana',
-      duration: '30-45 min',
-      intensity: 'Alta',
-      tips: 'Aquecimento obrigatório. Respeite os intervalos de recuperação.',
+      type: 'long',
+      name: 'Corrida Longa',
+      emoji: '🏃‍♂️',
+      description: 'Resistência aeróbica e endurance',
+      pace: plan.training_paces?.long || 'Moderado',
+      zone: 'Zona Aeróbica',
+      environment: 'Rua/Parque',
+      duration: '60-120 min',
+      intensity: 'Baixa-Moderada',
+      tips: 'Ritmo ligeiramente mais rápido que o fácil. Foque na duração.',
     },
     {
       type: 'tempo',
       name: 'Treino Tempo',
-      emoji: '🎯',
-      description: 'Ritmo moderadamente difícil',
-      pace: 'Limiar (Z3)',
+      emoji: '🔥',
+      description: 'Limiar anaeróbico',
+      pace: plan.training_paces?.tempo || 'Limiar',
+      zone: 'Zona Limiar',
       environment: 'Rua/Esteira',
-      duration: '25-40 min',
+      duration: '15-30 min',
       intensity: 'Moderada-Alta',
-      tips: 'Ritmo que você consegue manter por 1 hora em competição.',
+      tips: 'Ritmo "comfortavelmente difícil". Pode sustentar por ~1 hora.',
     },
     {
-      type: 'regenerativo',
-      name: 'Corrida Regenerativa',
-      emoji: '🌱',
+      type: 'interval',
+      name: 'Treino Intervalado',
+      emoji: '⚡',
+      description: 'VO2 máximo e velocidade',
+      pace: plan.training_paces?.interval || 'Pace 5K',
+      zone: 'Zona VO2 Max',
+      environment: 'Pista/Rua plana',
+      duration: '20-40 min',
+      intensity: 'Alta',
+      tips: 'Pace de 5K. Aquecimento obrigatório. Respeite a recuperação.',
+    },
+    {
+      type: 'recovery',
+      name: 'Recuperação',
+      emoji: '🧘‍♂️',
       description: 'Recuperação ativa',
-      pace: 'Muito fácil (Z1)',
+      pace: plan.training_paces?.recovery || 'Muito fácil',
+      zone: 'Zona Regenerativa',
       environment: 'Rua/Parque',
-      duration: '20-35 min',
+      duration: '20-40 min',
       intensity: 'Muito Baixa',
-      tips: 'Mais lento que o ritmo de conversa. Foque na recuperação.',
+      tips: 'Mais lento que corrida fácil. Foque na recuperação muscular.',
     },
   ];
 
@@ -86,24 +95,24 @@ export default function PlanDetailsScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => router.back()}
-          style={styles.headerButton}
-        >
-          <Ionicons name="arrow-back" size={24} color={ProRunnerColors.textPrimary} />
-        </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>Detalhes do Plano</Text>
-        </View>
-        <View style={styles.headerButton} />
-      </View>
-
-      <ScrollView style={styles.scrollView}>
+    <>
+      <Stack.Screen 
+        options={{
+          title: "Detalhes do Plano",
+          headerBackTitle: "Voltar",
+          headerStyle: {
+            backgroundColor: ProRunnerColors.background,
+          },
+          headerTintColor: ProRunnerColors.textPrimary,
+          headerTitleStyle: {
+            fontWeight: '600',
+          },
+        }} 
+      />
+      <SafeAreaView style={styles.container}>
+        <StatusBar style="light" />
+        
+        <ScrollView style={styles.scrollView}>
         {/* Plan Summary */}
         <View style={styles.summaryCard}>
           <Text style={styles.cardTitle}>📋 Resumo do Plano</Text>
@@ -119,11 +128,61 @@ export default function PlanDetailsScreen() {
             <Text style={styles.summaryLabel}>Nível:</Text>
             <Text style={styles.summaryValue}>{translateFitnessLevel(plan.fitness_level)}</Text>
           </View>
+          {plan.vdot && (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>VDOT:</Text>
+              <Text style={styles.summaryValue}>{Math.round(plan.vdot)}</Text>
+            </View>
+          )}
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Pace Base:</Text>
+            <Text style={styles.summaryLabel}>Pace Base (5K):</Text>
             <Text style={styles.summaryValue}>{plan.base_pace}/km</Text>
           </View>
+          {plan.estimated_capabilities && (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Capacidade Máxima:</Text>
+              <Text style={styles.summaryValue}>{plan.estimated_capabilities.currentMaxDistance}km</Text>
+            </View>
+          )}
         </View>
+
+        {/* VDOT Training Paces */}
+        {plan.training_paces && (
+          <View style={styles.summaryCard}>
+            <Text style={styles.cardTitle}>🎯 Paces de Treino (VDOT)</Text>
+            <Text style={styles.cardSubtitle}>Baseados na metodologia científica de Jack Daniels</Text>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Fácil (Easy):</Text>
+              <Text style={styles.summaryValue}>{plan.training_paces.easy}/km</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Longão (Long):</Text>
+              <Text style={styles.summaryValue}>{plan.training_paces.long}/km</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Tempo (Threshold):</Text>
+              <Text style={styles.summaryValue}>{plan.training_paces.tempo}/km</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Tiros (Interval):</Text>
+              <Text style={styles.summaryValue}>{plan.training_paces.interval}/km</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Recuperação:</Text>
+              <Text style={styles.summaryValue}>{plan.training_paces.recovery}/km</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Validation Warning */}
+        {plan.validation && plan.validation.warning && (
+          <View style={[styles.summaryCard, { backgroundColor: ProRunnerColors.warning + '20', borderLeftWidth: 4, borderLeftColor: ProRunnerColors.warning }]}>
+            <Text style={styles.cardTitle}>⚠️ Aviso Importante</Text>
+            <Text style={[styles.summaryValue, { color: ProRunnerColors.warning }]}>
+              {plan.validation.warning}
+            </Text>
+          </View>
+        )}
 
         {/* Workout Types */}
         <View style={styles.section}>
@@ -216,6 +275,7 @@ export default function PlanDetailsScreen() {
         <View style={styles.spacer} />
       </ScrollView>
     </SafeAreaView>
+    </>
   );
 }
 
@@ -224,30 +284,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: ProRunnerColors.background,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: ProRunnerColors.border,
-  },
-  headerButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitleContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: ProRunnerColors.textPrimary,
-  },
+
   scrollView: {
     flex: 1,
   },
@@ -273,6 +310,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: ProRunnerColors.textPrimary,
     marginBottom: 16,
+  },
+  cardSubtitle: {
+    fontSize: 14,
+    color: ProRunnerColors.textSecondary,
+    marginBottom: 12,
+    fontStyle: 'italic',
   },
   summaryRow: {
     flexDirection: 'row',

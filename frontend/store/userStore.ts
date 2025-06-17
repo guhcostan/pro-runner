@@ -9,20 +9,76 @@ export interface User {
   weight: number;
   personal_record_5k: string;
   goal: string;
+  goal_date?: string;
   weekly_frequency: number;
   created_at: string;
 }
 
-export interface Workout {
-  day: string;
-  type: 'longao' | 'tiros' | 'tempo' | 'regenerativo';
-  title: string;
-  distance: number;
+// Nova estrutura VDOT para paces de treino
+export interface TrainingPaces {
+  interval: string;
+  tempo: string;
+  easy: string;
+  long: string;
+  recovery: string;
+  intervalSeconds: number;
+  tempoSeconds: number;
+  easySeconds: number;
+  longSeconds: number;
+  recoverySeconds: number;
+}
+
+// Capacidades estimadas do atleta baseadas no VDOT
+export interface EstimatedCapabilities {
+  vdot: number;
+  currentMaxDistance: number;
+  safeWeeklyVolume: number;
+  maxLongRunStart: number;
+  maxLongRunPeak: number;
+  estimatedTimes: {
+    '10k': number;
+    'half': number;
+    'marathon': number;
+  };
+  canHandle: {
+    '5k': boolean;
+    '10k': boolean;
+    'half': boolean;
+    'marathon': boolean;
+  };
+}
+
+// Validação de objetivo
+export interface GoalValidation {
+  isRealistic: boolean;
+  isIdeal: boolean;
+  adjustedGoal: string;
+  warning: string | null;
+  recommendedWeeks: number;
+}
+
+// Nova estrutura de detalhes do treino baseada no VDOT
+export interface WorkoutDetails {
+  distance?: number;
+  duration?: number;
+  intervals?: number;
+  intervalDuration?: number;
+  recoveryTime?: number;
+  pace: string;
   description: string;
-  intensity: string;
+}
+
+export interface Workout {
+  id: string;
+  type: 'easy' | 'long' | 'interval' | 'tempo' | 'recovery';
+  day: string;
+  workoutDetails: WorkoutDetails;
+  detailedDescription: string;
+  tips?: string;
   completed?: boolean;
   completed_at?: string;
   notes?: string;
+  capabilities?: EstimatedCapabilities;
 }
 
 export interface Week {
@@ -32,14 +88,19 @@ export interface Week {
 }
 
 export interface TrainingPlan {
-  id: string;
+  id?: string;
   user_id: string;
   user_name?: string;
   goal: string;
+  originalGoal?: string;
   fitness_level: string;
   base_pace: string;
+  vdot: number;
+  training_paces: TrainingPaces;
   weekly_frequency: number;
   total_weeks: number;
+  estimated_capabilities: EstimatedCapabilities;
+  validation: GoalValidation;
   weeks: Week[];
   created_at: string;
 }

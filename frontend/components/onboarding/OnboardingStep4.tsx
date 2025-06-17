@@ -18,16 +18,10 @@ interface OnboardingStep4Props {
 }
 
 const goalLabels: Record<string, string> = {
+  comecar_correr: 'Começar a Correr - Dar os primeiros passos',
   fazer_5km: '5K - Conseguir correr 5km',
-  fazer_10km: '10K - Conseguir correr 10km',
-  meia_maratona: 'Meia Maratona - 21.1km',
-  maratona: 'Maratona - 42.2km',
-  melhorar_tempo_5km: 'Melhorar tempo nos 5K',
-  melhorar_tempo_10km: 'Melhorar tempo nos 10K',
-  voltar_a_correr: 'Voltar a correr',
-  comecar_correr: 'Começar a correr',
-  melhorar_tempo: 'Melhorar tempo',
-  perder_peso: 'Perder peso',
+  melhorar_tempo: 'Melhorar Tempo - Bater recorde pessoal',
+  perder_peso: 'Perder Peso - Usar corrida para emagrecer',
 };
 
 export default function OnboardingStep4({

@@ -40,13 +40,13 @@ function calculateFitnessLevel(userData) {
   // Classifica nível baseado no pace dos 5k
   let fitnessLevel;
   if (pacePerKm <= 240) { // < 4:00/km
-    fitnessLevel = 'avançado';
+    fitnessLevel = 'advanced';
   } else if (pacePerKm <= 300) { // 4:00-5:00/km
-    fitnessLevel = 'intermediário';
+    fitnessLevel = 'intermediate';
   } else if (pacePerKm <= 360) { // 5:00-6:00/km
-    fitnessLevel = 'iniciante_intermediário';
+    fitnessLevel = 'beginner_intermediate';
   } else { // > 6:00/km
-    fitnessLevel = 'iniciante';
+    fitnessLevel = 'beginner';
   }
   
   return {
@@ -67,27 +67,23 @@ function generateTrainingPlan(userData) {
   
   // Volumes base por nível de fitness (km por semana)
   const baseVolumes = {
-    'iniciante': 15,
-    'iniciante_intermediário': 25,
-    'intermediário': 35,
-    'avançado': 50
+    'beginner': 15,
+    'beginner_intermediate': 25,
+    'intermediate': 35,
+    'advanced': 50
   };
   
   const baseVolume = baseVolumes[fitnessInfo.fitnessLevel];
   
   // Ajusta volume baseado no objetivo
   const goalMultipliers = {
-    'fazer_5km': 0.8,
-    'comecar_correr': 0.7, // Adicionado suporte para comecar_correr
-    'fazer_10km': 1.0,
-    'meia_maratona': 1.3,
-    'maratona': 1.5,
-    'melhorar_tempo': 1.1, // Simplificado de melhorar_tempo_5km
-    'perder_peso': 0.9,
-    'voltar_a_correr': 0.7
+    'run_5k': 0.8,
+    'start_running': 0.7,
+    'improve_time': 1.1,
+    'lose_weight': 0.9
   };
   
-  const adjustedVolume = Math.round(baseVolume * (goalMultipliers[goal] || 1.0));
+  const adjustedVolume = Math.round(baseVolume * (goalMultipliers[goal] || goalMultipliers['run_5k']));
   
   // Gera 8 semanas de treino
   const weeks = [];
@@ -125,17 +121,13 @@ function generateWeeklyWorkouts(weeklyVolume, fitnessInfo, goal, weekNumber) {
   
   // Distribui volume entre tipos de treino baseado no objetivo
   const distributionByGoal = {
-    'fazer_5km': { easy: 0.7, tempo: 0.2, intervals: 0.1 },
-    'comecar_correr': { easy: 0.8, tempo: 0.1, intervals: 0.1 },
-    'fazer_10km': { easy: 0.6, tempo: 0.25, intervals: 0.15 },
-    'meia_maratona': { easy: 0.65, tempo: 0.25, intervals: 0.1 },
-    'maratona': { easy: 0.7, tempo: 0.2, intervals: 0.1 },
-    'melhorar_tempo': { easy: 0.5, tempo: 0.3, intervals: 0.2 },
-    'perder_peso': { easy: 0.75, tempo: 0.15, intervals: 0.1 },
-    'voltar_a_correr': { easy: 0.8, tempo: 0.1, intervals: 0.1 }
+    'run_5k': { easy: 0.7, tempo: 0.2, intervals: 0.1 },
+    'start_running': { easy: 0.8, tempo: 0.1, intervals: 0.1 },
+    'improve_time': { easy: 0.5, tempo: 0.3, intervals: 0.2 },
+    'lose_weight': { easy: 0.75, tempo: 0.15, intervals: 0.1 }
   };
   
-  const distribution = distributionByGoal[goal] || distributionByGoal['fazer_5km']; // fallback
+  const distribution = distributionByGoal[goal] || distributionByGoal['run_5k']; // fallback
   
   // Treino 1: Corrida Longa (Easy)
   const longRunDistance = Math.round(weeklyVolume * 0.35);
@@ -192,10 +184,10 @@ function generateWeeklyWorkouts(weeklyVolume, fitnessInfo, goal, weekNumber) {
  */
 function generateIntervalWorkout(distance, fitnessLevel) {
   const intervals = {
-    'iniciante': 'Aquecimento 2km + 4x400m (recuperação 200m caminhada) + desaquecimento 1km',
-    'iniciante_intermediário': 'Aquecimento 2km + 6x400m (recuperação 200m trote) + desaquecimento 1km',
-    'intermediário': 'Aquecimento 2km + 5x800m (recuperação 400m trote) + desaquecimento 1km',
-    'avançado': 'Aquecimento 2km + 6x1000m (recuperação 400m trote) + desaquecimento 2km'
+    'beginner': 'Aquecimento 2km + 4x400m (recuperação 200m caminhada) + desaquecimento 1km',
+    'beginner_intermediate': 'Aquecimento 2km + 6x400m (recuperação 200m trote) + desaquecimento 1km',
+    'intermediate': 'Aquecimento 2km + 5x800m (recuperação 400m trote) + desaquecimento 1km',
+    'advanced': 'Aquecimento 2km + 6x1000m (recuperação 400m trote) + desaquecimento 2km'
   };
   
   return intervals[fitnessLevel];

@@ -11,13 +11,10 @@ interface OnboardingStep2Props {
 }
 
 const goals = [
-  { id: 'fazer_5km', title: '5K', subtitle: 'Conseguir correr 5km', emoji: '🎯' },
-  { id: 'fazer_10km', title: '10K', subtitle: 'Conseguir correr 10km', emoji: '🚀' },
-  { id: 'meia_maratona', title: 'Meia Maratona', subtitle: '21.1km - O grande desafio!', emoji: '🏃‍♂️' },
-  { id: 'maratona', title: 'Maratona', subtitle: '42.2km - Para os corajosos!', emoji: '🏆' },
-  { id: 'melhorar_tempo_5km', title: 'Melhorar 5K', subtitle: 'Bater meu recorde nos 5km', emoji: '⚡' },
-  { id: 'melhorar_tempo_10km', title: 'Melhorar 10K', subtitle: 'Bater meu recorde nos 10km', emoji: '💨' },
-  { id: 'voltar_a_correr', title: 'Voltar a Correr', subtitle: 'Retomar o hábito da corrida', emoji: '🔄' },
+  { id: 'start_running', title: 'Começar a Correr', subtitle: 'Dar os primeiros passos na corrida', emoji: '🚶‍♂️' },
+  { id: 'run_5k', title: '5K', subtitle: 'Conseguir correr 5km', emoji: '🎯' },
+  { id: 'improve_time', title: 'Melhorar Tempo', subtitle: 'Bater meu recorde pessoal', emoji: '⚡' },
+  { id: 'lose_weight', title: 'Perder Peso', subtitle: 'Usar a corrida para emagrecer', emoji: '🏃‍♀️' },
 ];
 
 export default function OnboardingStep2({

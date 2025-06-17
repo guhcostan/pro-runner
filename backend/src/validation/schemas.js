@@ -6,10 +6,10 @@ const userCreateSchema = Joi.object({
   weight: Joi.number().min(30).max(200).required(), // em kg
   personal_record_5k: Joi.string().pattern(/^([0-5]?[0-9]):([0-5][0-9])$/).required(), // formato MM:SS
   goal: Joi.string().valid(
-    'comecar_correr',
-    'fazer_5km',
-    'melhorar_tempo',
-    'perder_peso'
+    'start_running',
+    'run_5k',
+    'improve_time',
+    'lose_weight'
   ).required(),
   auth_user_id: Joi.string().uuid().optional() // Para integração com Supabase auth
 });

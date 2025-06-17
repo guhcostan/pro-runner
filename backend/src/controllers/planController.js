@@ -8,7 +8,7 @@ const { generateTrainingPlan } = require('../services/planService.js');
  */
 async function createPlan(req, res) {
   try {
-    const { userId } = req.body;
+    const { userId, force = false } = req.body;
 
     if (!userId) {
       return res.status(400).json({
@@ -37,19 +37,33 @@ async function createPlan(req, res) {
     }
 
     // Verifica se já existe um plano para o usuário
-    const { data: existingPlan } = await supabase
+    const { data: existingPlans } = await supabase
       .from('training_plans')
       .select('id, created_at')
-      .eq('user_id', userId)
-      .single();
+      .eq('user_id', userId);
 
-    if (existingPlan) {
-      return res.status(409).json({
-        error: 'Plano já existe para este usuário',
-        message: 'Um plano de treino já foi gerado. Use o endpoint GET para recuperá-lo.',
-        plan_id: existingPlan.id,
-        created_at: existingPlan.created_at
-      });
+    if (existingPlans && existingPlans.length > 0) {
+      if (force) {
+        // Se force=true, deleta planos existentes antes de criar novo
+        const { error: deleteError } = await supabase
+          .from('training_plans')
+          .delete()
+          .eq('user_id', userId);
+
+        if (deleteError) {
+          console.error('Error deleting existing plans:', deleteError);
+          return res.status(500).json({
+            error: 'Erro ao deletar planos existentes'
+          });
+        }
+      } else {
+        return res.status(409).json({
+          error: 'Plano já existe para este usuário',
+          message: 'Um plano de treino já foi gerado. Use force=true para recriar.',
+          plan_id: existingPlans[0].id,
+          created_at: existingPlans[0].created_at
+        });
+      }
     }
 
     // Gera o plano de treino
@@ -64,7 +78,6 @@ async function createPlan(req, res) {
         fitness_level: trainingPlan.fitness_level,
         base_pace: trainingPlan.base_pace,
         total_weeks: trainingPlan.total_weeks,
-        weekly_frequency: trainingPlan.weekly_frequency,
         plan_data: trainingPlan.weeks,
         created_at: trainingPlan.created_at
       }])
@@ -80,7 +93,7 @@ async function createPlan(req, res) {
     }
 
     res.status(201).json({
-      message: 'Plano de treino criado com sucesso',
+      message: force ? 'Plano de treino recriado com sucesso' : 'Plano de treino criado com sucesso',
       plan: {
         id: savedPlan.id,
         user_id: savedPlan.user_id,
@@ -88,7 +101,7 @@ async function createPlan(req, res) {
         fitness_level: savedPlan.fitness_level,
         base_pace: savedPlan.base_pace,
         total_weeks: savedPlan.total_weeks,
-        weekly_frequency: savedPlan.weekly_frequency,
+        weekly_frequency: trainingPlan.weekly_frequency,
         weeks: savedPlan.plan_data,
         created_at: savedPlan.created_at
       }

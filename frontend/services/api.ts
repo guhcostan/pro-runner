@@ -49,6 +49,7 @@ export interface CreateUserResponse {
 
 export interface CreatePlanRequest {
   userId: string;
+  force?: boolean;
 }
 
 export interface CreatePlanResponse {
@@ -113,7 +114,7 @@ export const apiService = {
   },
 
   async getPlanByUserId(userId: string): Promise<GetPlanResponse> {
-    const response = await api.get(`/plans/${userId}`);
+    const response = await api.get(`/plans/user/${userId}`);
     return response.data;
   },
 

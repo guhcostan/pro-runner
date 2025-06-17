@@ -52,6 +52,30 @@ describe('Plan Controller', () => {
       testPlanId = response.body.plan.id;
     });
 
+    it('should recreate plan when force=true', async () => {
+      if (!testUserId) {
+        console.log('Skipping test - user creation failed');
+        return;
+      }
+
+      const planData = {
+        userId: testUserId,
+        force: true
+      };
+
+      const response = await request(app)
+        .post('/api/plans')
+        .send(planData)
+        .expect(201);
+
+      expect(response.body).toHaveProperty('message', 'Plano de treino recriado com sucesso');
+      expect(response.body).toHaveProperty('plan');
+      expect(response.body.plan).toHaveProperty('id');
+      expect(response.body.plan.id).not.toBe(testPlanId); // Should be a new plan ID
+
+      testPlanId = response.body.plan.id;
+    });
+
     it('should return 400 for missing userId', async () => {
       const response = await request(app)
         .post('/api/plans')

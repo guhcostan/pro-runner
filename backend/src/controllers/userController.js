@@ -22,13 +22,44 @@ const createUser = async (req, res) => {
     if (validatedData.auth_user_id) {
       const { data: existingUsers } = await supabase
         .from('users')
-        .select('id')
+        .select('*')
         .eq('auth_user_id', validatedData.auth_user_id);
 
       if (existingUsers && existingUsers.length > 0) {
-        return res.status(409).json({
-          error: 'Usuário já existe',
-          message: 'Já existe um usuário cadastrado com este ID de autenticação'
+        const existingUser = existingUsers[0];
+        
+        // Atualiza os dados do usuário existente com os novos dados
+        const { data: updatedUser, error: updateError } = await supabase
+          .from('users')
+          .update({
+            name: validatedData.name,
+            height: validatedData.height,
+            weight: validatedData.weight,
+            personal_record_5k: validatedData.personal_record_5k,
+            goal: validatedData.goal,
+            weekly_frequency: validatedData.weekly_frequency,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingUser.id)
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error('Database update error:', updateError);
+          return res.status(500).json({
+            error: 'Erro ao atualizar usuário',
+            message: 'Não foi possível atualizar os dados no banco'
+          });
+        }
+
+        return res.status(200).json({
+          message: 'Dados do usuário atualizados com sucesso',
+          user: {
+            id: updatedUser.id,
+            name: updatedUser.name,
+            goal: updatedUser.goal,
+            created_at: updatedUser.created_at
+          }
         });
       }
     }

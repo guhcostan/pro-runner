@@ -18,7 +18,8 @@ const userCreateSchema = Joi.object({
 });
 
 const planCreateSchema = Joi.object({
-  userId: Joi.string().uuid().required()
+  userId: Joi.string().uuid().required(),
+  force: Joi.boolean().optional().default(false)
 });
 
 module.exports = {

@@ -57,7 +57,7 @@ interface UserState {
   
   // Actions
   setUser: (user: User) => void;
-  setPlan: (plan: TrainingPlan) => void;
+  setPlan: (plan: TrainingPlan | null) => void;
   setOnboardingComplete: (complete: boolean) => void;
   setLoading: (loading: boolean) => void;
   setCreatingUser: (creating: boolean) => void;

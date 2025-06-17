@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -16,7 +16,11 @@ import { apiService } from '../services/api';
 
 export default function GeneratingPlanScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { user, setPlan, isCreatingPlan, setCreatingPlan } = useUserStore();
+  
+  // Verifica se é uma redefinição de plano
+  const isRedefining = params.redefining === 'true';
 
   useEffect(() => {
     generatePlan();
@@ -32,7 +36,11 @@ export default function GeneratingPlanScreen() {
     setCreatingPlan(true);
 
     try {
-      const response = await apiService.createPlan({ userId: user.id });
+      // Se está redefinindo, usa force=true para deletar plano existente
+      const response = await apiService.createPlan({ 
+        userId: user.id, 
+        force: isRedefining 
+      });
       setPlan(response.plan);
       
       // Small delay for better UX
@@ -43,19 +51,32 @@ export default function GeneratingPlanScreen() {
     } catch (error: any) {
       console.error('Error creating plan:', error);
       
-      let errorMessage = 'Não foi possível gerar seu plano de treino.';
-      
       if (error.response?.status === 409) {
         // Plan already exists, try to fetch it
+        console.log('Plan already exists, loading existing plan...');
         try {
           const existingPlan = await apiService.getPlanByUserId(user.id);
           setPlan(existingPlan.plan);
-          router.replace('/(tabs)');
+          
+          // Small delay for better UX, then navigate
+          setTimeout(() => {
+            router.replace('/(tabs)');
+          }, 1000);
           return;
         } catch (fetchError) {
-          errorMessage = 'Erro ao carregar plano existente.';
+          console.error('Error fetching existing plan:', fetchError);
+          Alert.alert(
+            'Erro',
+            'Erro ao carregar plano existente. Tente novamente.',
+            [{ text: 'OK', onPress: () => router.replace('/(tabs)') }]
+          );
+          return;
         }
-      } else if (error.response?.data?.message) {
+      }
+      
+      // Other errors
+      let errorMessage = 'Não foi possível gerar seu plano de treino.';
+      if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       }
       
@@ -82,22 +103,30 @@ export default function GeneratingPlanScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
+      
       <View style={styles.content}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={ProRunnerColors.primary} />
-          
-          <Text style={styles.title}>Gerando seu plano personalizado</Text>
-          
-          <View style={styles.steps}>
-            <Text style={styles.step}>🏃‍♂️ Analisando seu perfil...</Text>
-            <Text style={styles.step}>📊 Calculando volumes de treino...</Text>
-            <Text style={styles.step}>🎯 Criando programa de 8 semanas...</Text>
-            <Text style={styles.step}>⚡ Distribuindo intensidades...</Text>
-          </View>
-          
-          <Text style={styles.subtitle}>
-            Isso pode levar alguns segundos
-          </Text>
+        <ActivityIndicator 
+          size="large" 
+          color={ProRunnerColors.primary} 
+          style={styles.loader} 
+        />
+        
+        <Text style={styles.title}>
+          {isRedefining ? '🔄 Redefinindo Plano' : '🚀 Gerando seu Plano'}
+        </Text>
+        
+        <Text style={styles.subtitle}>
+          {isRedefining 
+            ? 'Criando um novo plano com suas configurações atualizadas...' 
+            : 'Estamos criando o plano de treino perfeito para você...'
+          }
+        </Text>
+        
+        <View style={styles.steps}>
+          <Text style={styles.step}>✅ Analisando seus dados</Text>
+          <Text style={styles.step}>🏃‍♂️ Calculando intensidades</Text>
+          <Text style={styles.step}>📅 Organizando treinos</Text>
+          <Text style={styles.step}>🎯 Finalizando plano</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -115,8 +144,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
   },
-  loadingContainer: {
-    alignItems: 'center',
+  loader: {
+    marginBottom: 24,
   },
   title: {
     fontSize: 24,

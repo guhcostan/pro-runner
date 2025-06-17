@@ -67,11 +67,8 @@ export default function SignupScreen() {
         [{ text: 'OK' }]
       );
     } else {
-      Alert.alert(
-        'Conta Criada! 🎉',
-        'Sua conta foi criada com sucesso. Agora você pode começar sua jornada!',
-        [{ text: 'OK', onPress: () => router.replace('/') }]
-      );
+      // Conta criada com sucesso, redireciona automaticamente
+      router.replace('/');
     }
   };
 
@@ -99,7 +96,7 @@ export default function SignupScreen() {
             <View style={styles.header}>
               <Text style={styles.title}>Começar sua jornada! 🚀</Text>
               <Text style={styles.subtitle}>
-                Crie sua conta para acessar planos personalizados
+                Crie sua conta e comece a treinar imediatamente
               </Text>
             </View>
 

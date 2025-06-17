@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -22,51 +22,78 @@ import OnboardingStep3 from '../components/onboarding/OnboardingStep3';
 import OnboardingStep3_5 from '../components/onboarding/OnboardingStep3_5';
 import OnboardingStep4 from '../components/onboarding/OnboardingStep4';
 
+const GOALS = [
+  { id: 'start_running', name: 'Começar a Correr', emoji: '🚶‍♂️' },
+  { id: 'run_5k', name: 'Correr 5K', emoji: '🎯' },
+  { id: 'run_10k', name: 'Correr 10K', emoji: '🚀' },
+  { id: 'half_marathon', name: 'Meia Maratona', emoji: '🏃‍♂️' },
+  { id: 'marathon', name: 'Maratona', emoji: '🏆' },
+  { id: 'improve_time', name: 'Melhorar Tempo', emoji: '⚡' },
+];
+
 export default function OnboardingScreen() {
   const router = useRouter();
-  const { setUser, setOnboardingComplete, isCreatingUser, setCreatingUser } = useUserStore();
+  const params = useLocalSearchParams();
+  const { user, setUser, setOnboardingComplete, isCreatingUser, setCreatingUser } = useUserStore();
   const { user: authUser } = useAuthStore();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [isRedefining] = useState(params.redefining === 'true');
+
   const [formData, setFormData] = useState({
-    name: '',
-    height: '',
-    weight: '',
-    goal: '',
-    personal_record_5k: '',
-    weekly_frequency: 3, // Default to 3x per week
+    name: user?.name || '',
+    height: user?.height?.toString() || '',
+    weight: user?.weight?.toString() || '',
+    personal_record_5k: user?.personal_record_5k || '30:00',
+    goal: user?.goal || 'run_5k',
+    weekly_frequency: user?.weekly_frequency || 3,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const validateStep = (step: number) => {
+  useEffect(() => {
+    if (isRedefining && user) {
+      setFormData({
+        name: user.name,
+        height: user.height.toString(),
+        weight: user.weight.toString(),
+        personal_record_5k: user.personal_record_5k,
+        goal: user.goal,
+        weekly_frequency: user.weekly_frequency,
+      });
+    }
+  }, [isRedefining, user]);
+
+  const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (step === 1) {
+    if (step >= 1) {
       if (!formData.name.trim()) {
         newErrors.name = 'Nome é obrigatório';
+      } else if (formData.name.trim().length < 2) {
+        newErrors.name = 'Nome deve ter pelo menos 2 caracteres';
       }
+    }
 
+    if (step >= 2) {
       const height = parseInt(formData.height);
-      if (!formData.height || isNaN(height) || height < 100 || height > 250) {
+      if (!formData.height || isNaN(height)) {
+        newErrors.height = 'Altura é obrigatória';
+      } else if (height < 100 || height > 250) {
         newErrors.height = 'Altura deve estar entre 100 e 250 cm';
       }
 
       const weight = parseFloat(formData.weight);
-      if (!formData.weight || isNaN(weight) || weight < 30 || weight > 200) {
+      if (!formData.weight || isNaN(weight)) {
+        newErrors.weight = 'Peso é obrigatório';
+      } else if (weight < 30 || weight > 200) {
         newErrors.weight = 'Peso deve estar entre 30 e 200 kg';
       }
     }
 
-    if (step === 2) {
-      if (!formData.goal) {
-        newErrors.goal = 'Selecione um objetivo';
-      }
-    }
-
-    if (step === 3) {
+    if (step >= 3) {
       const timeRegex = /^([0-5]?[0-9]):([0-5][0-9])$/;
-      if (!formData.personal_record_5k || !timeRegex.test(formData.personal_record_5k)) {
+      if (!timeRegex.test(formData.personal_record_5k)) {
         newErrors.personal_record_5k = 'Formato deve ser MM:SS (ex: 25:30)';
       }
     }
@@ -91,27 +118,42 @@ export default function OnboardingScreen() {
     setCreatingUser(true);
 
     try {
-      const userData = {
-        name: formData.name.trim(),
-        height: parseInt(formData.height),
-        weight: parseFloat(formData.weight),
-        personal_record_5k: formData.personal_record_5k,
-        goal: formData.goal,
-        weekly_frequency: parseInt(formData.weekly_frequency.toString()),
-        auth_user_id: authUser?.id, // Include auth user ID
-      };
+      if (isRedefining && user) {
+        const userData = {
+          name: formData.name.trim(),
+          height: parseInt(formData.height),
+          weight: parseFloat(formData.weight),
+          personal_record_5k: formData.personal_record_5k,
+          goal: formData.goal,
+          weekly_frequency: parseInt(formData.weekly_frequency.toString()),
+          auth_user_id: authUser?.id,
+        };
 
-      const response = await apiService.createUser(userData);
+        const response = await apiService.createUser(userData);
+        setUser(response.user);
+        
+        router.replace('/generating-plan?redefining=true');
+      } else {
+        const userData = {
+          name: formData.name.trim(),
+          height: parseInt(formData.height),
+          weight: parseFloat(formData.weight),
+          personal_record_5k: formData.personal_record_5k,
+          goal: formData.goal,
+          weekly_frequency: parseInt(formData.weekly_frequency.toString()),
+          auth_user_id: authUser?.id,
+        };
 
-      setUser(response.user);
-      setOnboardingComplete(true);
-      router.replace('/generating-plan');
-
+        const response = await apiService.createUser(userData);
+        setUser(response.user);
+        setOnboardingComplete(true);
+        router.replace('/generating-plan');
+      }
     } catch (error: any) {
       console.error('Error creating user:', error);
       Alert.alert(
         'Erro',
-        error.response?.data?.message || 'Não foi possível criar sua conta. Tente novamente.',
+        error.response?.data?.message || 'Não foi possível salvar suas configurações. Tente novamente.',
         [{ text: 'OK' }]
       );
     } finally {

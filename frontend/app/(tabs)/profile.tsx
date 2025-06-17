@@ -19,7 +19,7 @@ import { useAuthStore } from '../../store/authStore';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, plan, clearData } = useUserStore();
+  const { user, plan, clearData, setPlan } = useUserStore();
   const { signOut } = useAuthStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -76,8 +76,10 @@ export default function ProfileScreen() {
           text: 'Redefinir',
           style: 'default',
           onPress: () => {
-            // Mantém dados do usuário, mas refaz o plano
-            router.replace('/onboarding');
+            // Limpa apenas o plano, mantém dados do usuário
+            setPlan(null);
+            // Redireciona para onboarding indicando que é uma redefinição
+            router.replace('/onboarding?redefining=true');
           },
         },
       ]

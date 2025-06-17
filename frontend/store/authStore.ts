@@ -36,6 +36,12 @@ export const useAuthStore = create<AuthState>()(
           password,
         });
         
+        if (error) {
+          set({ isLoading: false });
+          return { error };
+        }
+        
+        // Com confirmação de email desabilitada, o usuário e sessão devem vir imediatamente
         if (data.user && data.session) {
           set({ 
             user: data.user, 
@@ -43,11 +49,34 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: true,
             isLoading: false 
           });
-        } else {
-          set({ isLoading: false });
+          return { error: null };
+        } else if (data.user && !data.session) {
+          // Usuário criado mas sem sessão - vamos fazer login imediatamente
+          console.log('User created but no session - attempting auto-login');
+          
+          const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+          
+          if (loginError) {
+            set({ isLoading: false });
+            return { error: loginError };
+          }
+          
+          if (loginData.user && loginData.session) {
+            set({ 
+              user: loginData.user, 
+              session: loginData.session, 
+              isAuthenticated: true,
+              isLoading: false 
+            });
+            return { error: null };
+          }
         }
         
-        return { error };
+        set({ isLoading: false });
+        return { error: new Error('Falha ao autenticar após criar conta') };
       },
       
       signIn: async (email: string, password: string) => {

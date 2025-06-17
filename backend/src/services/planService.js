@@ -353,46 +353,46 @@ function generateWeeklyWorkouts(weeklyVolume, fitnessInfo, goal, weekNumber, wee
   
   // Distribui treinos baseado na frequência semanal
   switch (weeklyFrequency) {
-    case 2:
-      workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-      workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
-      break;
+  case 2:
+    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
+    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
+    break;
       
-    case 3:
-      workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-      workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.25 * volumeMultiplier), capabilities.currentMaxDistance * 0.3), 'Quinta-feira', capabilities));
-      workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
-      break;
+  case 3:
+    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
+    workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.25 * volumeMultiplier), capabilities.currentMaxDistance * 0.3), 'Quinta-feira', capabilities));
+    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
+    break;
       
-    case 4:
-      workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-      workouts.push(generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities));
-      workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
-      workouts.push(generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities));
-      break;
+  case 4:
+    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
+    workouts.push(generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities));
+    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
+    workouts.push(generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities));
+    break;
       
-    case 5:
-      workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.2 * volumeMultiplier), capabilities.currentMaxDistance * 0.25), 'Segunda-feira', capabilities));
-      workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-      workouts.push(generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities));
-      workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
-      workouts.push(generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities));
-      break;
+  case 5:
+    workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.2 * volumeMultiplier), capabilities.currentMaxDistance * 0.25), 'Segunda-feira', capabilities));
+    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
+    workouts.push(generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities));
+    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
+    workouts.push(generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities));
+    break;
       
-    case 6:
-      workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), capabilities.currentMaxDistance * 0.2), 'Segunda-feira', capabilities));
-      workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-      workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.2 * volumeMultiplier), capabilities.currentMaxDistance * 0.25), 'Quarta-feira', capabilities));
-      workouts.push(generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities));
-      workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
-      workouts.push(generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities));
-      break;
+  case 6:
+    workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), capabilities.currentMaxDistance * 0.2), 'Segunda-feira', capabilities));
+    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
+    workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.2 * volumeMultiplier), capabilities.currentMaxDistance * 0.25), 'Quarta-feira', capabilities));
+    workouts.push(generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities));
+    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
+    workouts.push(generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities));
+    break;
       
-    default:
-      // Fallback para 3 treinos/semana
-      workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-      workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.25 * volumeMultiplier), capabilities.currentMaxDistance * 0.3), 'Quinta-feira', capabilities));
-      workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
+  default:
+    // Fallback para 3 treinos/semana
+    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
+    workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.25 * volumeMultiplier), capabilities.currentMaxDistance * 0.3), 'Quinta-feira', capabilities));
+    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
   }
   
   return workouts;

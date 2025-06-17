@@ -1,0 +1,48 @@
+{
+  "name": "prorunner",
+  "version": "1.0.0",
+  "description": "MVP de um aplicativo de corrida que gera planos de treino personalizados baseados no perfil do usuário.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && npm test",
+    "test:frontend": "cd frontend && npm test -- --watchAll=false",
+    "lint": "npm run lint:backend && npm run lint:frontend",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
+    "typecheck": "npm run typecheck:frontend",
+    "typecheck:frontend": "cd frontend && npx tsc --noEmit",
+    "check-all": "npm run lint && npm run typecheck && npm run test",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guhcostan/pro-runner.git"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "running",
+    "training",
+    "supabase"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/guhcostan/pro-runner/issues"
+  },
+  "homepage": "https://github.com/guhcostan/pro-runner#readme",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.10"
+  },
+  "lint-staged": {
+    "backend/**/*.js": [
+      "cd backend && npm run lint -- --fix"
+    ],
+    "frontend/**/*.{ts,tsx}": [
+      "cd frontend && npm run typecheck"
+    ]
+  },
+  "packageManager": "yarn@4.9.1+sha512.f95ce356460e05be48d66401c1ae64ef84d163dd689964962c6888a9810865e39097a5e9de748876c2e0bf89b232d583c33982773e9903ae7a76257270986538"
+}

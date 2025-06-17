@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🧪 Executando verificações críticas antes do push..."
+
+# Verifica TypeScript
+echo "🔍 Verificando TypeScript..."
+cd frontend && npm run typecheck
+if [ $? -ne 0 ]; then
+  echo "❌ Erros de TypeScript encontrados!"
+  exit 1
+fi
+
+# Executa testes do frontend (mais críticos)
+echo "📱 Testando frontend..."
+npm test -- --watchAll=false
+if [ $? -ne 0 ]; then
+  echo "❌ Testes do frontend falharam!"
+  exit 1
+fi
+
+echo "✅ Verificações principais passaram! Push permitido." 

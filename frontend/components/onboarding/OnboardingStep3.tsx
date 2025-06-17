@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { ProRunnerColors } from '../../constants/Colors';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -13,12 +13,12 @@ interface OnboardingStep3Props {
 }
 
 const fitnessLevels = [
-  { time: '18:00', label: 'Avançado - Sub 18min', emoji: '🏃‍♂️💨', color: '#8B5CF6' },
-  { time: '20:00', label: 'Intermediário - ~20min', emoji: '🏃‍♂️', color: '#3B82F6' },
-  { time: '25:00', label: 'Recreativo - ~25min', emoji: '🚶‍♂️', color: '#10B981' },
-  { time: '30:00', label: 'Iniciante - ~30min', emoji: '🚶', color: '#F59E0B' },
-  { time: '35:00', label: 'Sedentário - ~35min', emoji: '🧘‍♂️', color: '#6B7280' },
-  { time: '40:00', label: 'Nunca corri 5K', emoji: '🤷‍♂️', color: '#EF4444' },
+  { time: '18:00', label: 'Avançado - Sub 18min', emoji: '🏃‍♂️💨', color: '#8B5CF6', description: 'Atleta de alto nível' },
+  { time: '20:00', label: 'Intermediário - ~20min', emoji: '🏃‍♂️', color: '#3B82F6', description: 'Corredor experiente' },
+  { time: '25:00', label: 'Recreativo - ~25min', emoji: '🚶‍♂️', color: '#10B981', description: 'Corredor regular' },
+  { time: '30:00', label: 'Iniciante - ~30min', emoji: '🚶', color: '#F59E0B', description: 'Começando a correr' },
+  { time: '35:00', label: 'Sedentário - ~35min', emoji: '🧘‍♂️', color: '#6B7280', description: 'Pouco exercício' },
+  { time: '40:00', label: 'Nunca corri 5K', emoji: '🤷‍♂️', color: '#EF4444', description: 'Primeira vez' },
 ];
 
 export default function OnboardingStep3({
@@ -28,82 +28,155 @@ export default function OnboardingStep3({
   onBack,
   error,
 }: OnboardingStep3Props) {
-  const [showCustomInput, setShowCustomInput] = useState(false);
+  const [mode, setMode] = useState<'input' | 'level' | null>(null);
 
   const handleSelectTime = (time: string) => {
     onUpdatePersonalRecord(time);
-    setShowCustomInput(false);
+  };
+
+  const handleInputChange = (value: string) => {
+    onUpdatePersonalRecord(value);
+  };
+
+  const resetMode = () => {
+    setMode(null);
+    onUpdatePersonalRecord('');
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.emoji}>⏱️</Text>
-        <Text style={styles.title}>Seu tempo nos 5K</Text>
-        <Text style={styles.subtitle}>
-          Qual seu melhor tempo? Se nunca correu 5K, escolha uma estimativa
-        </Text>
-      </View>
-
-      <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Escolha seu nível de condicionamento:</Text>
-        
-        <View style={styles.timeOptions}>
-          {fitnessLevels.map((option) => (
-            <TouchableOpacity
-              key={option.time}
-              style={[
-                styles.timeCard,
-                personalRecord === option.time && styles.timeCardSelected,
-                { borderLeftWidth: 4, borderLeftColor: option.color }
-              ]}
-              onPress={() => handleSelectTime(option.time)}
-            >
-              <View style={styles.timeCardHeader}>
-                <Text style={styles.levelEmoji}>{option.emoji}</Text>
-                <Text style={[
-                  styles.timeText,
-                  personalRecord === option.time && styles.timeTextSelected,
-                ]}>
-                  {option.time}
-                </Text>
-              </View>
-              <Text style={[
-                styles.timeLabelText,
-                personalRecord === option.time && styles.timeLabelTextSelected,
-              ]}>
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.emoji}>⏱️</Text>
+          <Text style={styles.title}>Seu tempo nos 5K</Text>
+          <Text style={styles.subtitle}>
+            Vamos descobrir seu ritmo atual para criar o plano perfeito
+          </Text>
         </View>
 
-        <Text style={styles.orText}>ou se souber seu tempo exato</Text>
+        {!mode && (
+          <View style={styles.modeSelection}>
+            <Text style={styles.sectionTitle}>Como você prefere informar seu pace?</Text>
+            
+            <TouchableOpacity
+              style={styles.modeCard}
+              onPress={() => setMode('input')}
+            >
+              <View style={styles.modeCardContent}>
+                <Text style={styles.modeEmoji}>🎯</Text>
+                <View style={styles.modeText}>
+                  <Text style={styles.modeTitle}>Sei meu tempo</Text>
+                  <Text style={styles.modeDescription}>
+                    Digitar meu melhor tempo nos 5K
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[
-            styles.customButton,
-            showCustomInput && styles.customButtonActive,
-          ]}
-          onPress={() => setShowCustomInput(!showCustomInput)}
-        >
-          <Text style={styles.customButtonText}>
-            ⏱️ Inserir meu tempo personalizado
-          </Text>
-        </TouchableOpacity>
-
-        {showCustomInput && (
-          <View style={styles.customInput}>
-            <Input
-              label="Tempo nos 5K (MM:SS)"
-              value={personalRecord}
-              onChangeText={onUpdatePersonalRecord}
-              placeholder="22:30"
-              error={error}
-            />
+            <TouchableOpacity
+              style={styles.modeCard}
+              onPress={() => setMode('level')}
+            >
+              <View style={styles.modeCardContent}>
+                <Text style={styles.modeEmoji}>🤔</Text>
+                <View style={styles.modeText}>
+                  <Text style={styles.modeTitle}>Não sei meu tempo</Text>
+                  <Text style={styles.modeDescription}>
+                    Escolher baseado no meu nível de atividade
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
           </View>
         )}
-      </View>
+
+        {mode === 'input' && (
+          <View style={styles.inputMode}>
+            <View style={styles.modeHeader}>
+              <TouchableOpacity onPress={resetMode} style={styles.backToMode}>
+                <Text style={styles.backToModeText}>← Voltar às opções</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.sectionTitle}>Digite seu melhor tempo nos 5K</Text>
+            <Text style={styles.inputHint}>
+              Se nunca cronometrou, tente estimar baseado em corridas similares
+            </Text>
+
+            <View style={styles.inputContainer}>
+              <Input
+                label="Tempo nos 5K (MM:SS)"
+                value={personalRecord}
+                onChangeText={handleInputChange}
+                placeholder="22:30"
+                error={error}
+                keyboardType="numeric"
+              />
+            </View>
+
+            <View style={styles.paceExamples}>
+              <Text style={styles.examplesTitle}>Exemplos de ritmos:</Text>
+              <Text style={styles.exampleText}>• 18:00 - Atleta avançado</Text>
+              <Text style={styles.exampleText}>• 22:00 - Corredor experiente</Text>
+              <Text style={styles.exampleText}>• 28:00 - Iniciante regular</Text>
+              <Text style={styles.exampleText}>• 35:00 - Primeira vez</Text>
+            </View>
+          </View>
+        )}
+
+        {mode === 'level' && (
+          <View style={styles.levelMode}>
+            <View style={styles.modeHeader}>
+              <TouchableOpacity onPress={resetMode} style={styles.backToMode}>
+                <Text style={styles.backToModeText}>← Voltar às opções</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.sectionTitle}>Escolha seu nível atual</Text>
+            <Text style={styles.levelHint}>
+              Selecione a opção que melhor descreve sua condição física atual
+            </Text>
+            
+            <View style={styles.timeOptions}>
+              {fitnessLevels.map((option) => (
+                <TouchableOpacity
+                  key={option.time}
+                  style={[
+                    styles.timeCard,
+                    personalRecord === option.time && styles.timeCardSelected,
+                    { borderLeftWidth: 4, borderLeftColor: option.color }
+                  ]}
+                  onPress={() => handleSelectTime(option.time)}
+                >
+                  <View style={styles.timeCardHeader}>
+                    <Text style={styles.levelEmoji}>{option.emoji}</Text>
+                    <View style={styles.timeCardText}>
+                      <Text style={[
+                        styles.timeText,
+                        personalRecord === option.time && styles.timeTextSelected,
+                      ]}>
+                        {option.time}
+                      </Text>
+                      <Text style={[
+                        styles.timeLabelText,
+                        personalRecord === option.time && styles.timeLabelTextSelected,
+                      ]}>
+                        {option.label}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={[
+                    styles.timeDescription,
+                    personalRecord === option.time && styles.timeDescriptionSelected,
+                  ]}>
+                    {option.description}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+      </ScrollView>
 
       <View style={styles.buttons}>
         <Button
@@ -126,12 +199,15 @@ export default function OnboardingStep3({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: ProRunnerColors.background,
+  },
+  scrollView: {
+    flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 40,
-    paddingBottom: 20,
   },
   header: {
     alignItems: 'center',
+    marginTop: 40,
     marginBottom: 32,
   },
   emoji: {
@@ -150,15 +226,98 @@ const styles = StyleSheet.create({
     color: ProRunnerColors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
+    paddingHorizontal: 16,
   },
-  content: {
-    flex: 1,
+  modeSelection: {
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: ProRunnerColors.textPrimary,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  modeCard: {
+    backgroundColor: ProRunnerColors.cardBackground,
+    padding: 20,
     marginBottom: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  modeCardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  modeEmoji: {
+    fontSize: 32,
+    marginRight: 16,
+  },
+  modeText: {
+    flex: 1,
+  },
+  modeTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 4,
+  },
+  modeDescription: {
+    fontSize: 14,
+    color: ProRunnerColors.textSecondary,
+    lineHeight: 20,
+  },
+  inputMode: {
+    marginBottom: 24,
+  },
+  levelMode: {
+    marginBottom: 24,
+  },
+  modeHeader: {
+    marginBottom: 20,
+  },
+  backToMode: {
+    alignSelf: 'flex-start',
+  },
+  backToModeText: {
+    fontSize: 16,
+    color: ProRunnerColors.primary,
+    fontWeight: '500',
+  },
+  inputHint: {
+    fontSize: 14,
+    color: ProRunnerColors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  levelHint: {
+    fontSize: 14,
+    color: ProRunnerColors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  inputContainer: {
+    marginBottom: 24,
+  },
+  paceExamples: {
+    backgroundColor: ProRunnerColors.cardBackground,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  examplesTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 8,
+  },
+  exampleText: {
+    fontSize: 14,
+    color: ProRunnerColors.textSecondary,
+    marginBottom: 4,
   },
   timeOptions: {
     marginBottom: 24,
@@ -177,69 +336,49 @@ const styles = StyleSheet.create({
   },
   timeCardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
+    alignItems: 'flex-start',
+    marginBottom: 8,
   },
   levelEmoji: {
     fontSize: 24,
     marginRight: 12,
+    marginTop: 2,
+  },
+  timeCardText: {
+    flex: 1,
   },
   timeText: {
     fontSize: 20,
     fontWeight: 'bold',
     color: ProRunnerColors.textPrimary,
+    marginBottom: 2,
   },
   timeTextSelected: {
     color: ProRunnerColors.primary,
   },
   timeLabelText: {
     fontSize: 14,
+    fontWeight: '600',
     color: ProRunnerColors.textSecondary,
   },
   timeLabelTextSelected: {
     color: ProRunnerColors.textPrimary,
   },
-  orText: {
-    textAlign: 'center',
-    fontSize: 16,
+  timeDescription: {
+    fontSize: 12,
     color: ProRunnerColors.textSecondary,
-    marginBottom: 16,
-  },
-  customButton: {
-    backgroundColor: ProRunnerColors.cardBackground,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    marginBottom: 16,
-  },
-  customButtonActive: {
-    borderColor: ProRunnerColors.primary,
-  },
-  customButtonText: {
-    fontSize: 16,
-    color: ProRunnerColors.textPrimary,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  customInput: {
-    marginBottom: 16,
-  },
-  neverRanButton: {
-    padding: 12,
-    marginTop: 'auto',
-    marginBottom: 20,
-  },
-  neverRanText: {
-    fontSize: 16,
-    color: ProRunnerColors.textSecondary,
-    textAlign: 'center',
     fontStyle: 'italic',
+  },
+  timeDescriptionSelected: {
+    color: ProRunnerColors.textPrimary,
   },
   buttons: {
     flexDirection: 'row',
     gap: 12,
-    marginTop: 20,
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+    paddingTop: 16,
+    backgroundColor: ProRunnerColors.background,
   },
   backButton: {
     flex: 1,

@@ -18,6 +18,21 @@ const createUser = async (req, res) => {
       });
     }
 
+    // Verificar se já existe um usuário com este auth_user_id
+    if (validatedData.auth_user_id) {
+      const { data: existingUsers } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_user_id', validatedData.auth_user_id);
+
+      if (existingUsers && existingUsers.length > 0) {
+        return res.status(409).json({
+          error: 'Usuário já existe',
+          message: 'Já existe um usuário cadastrado com este ID de autenticação'
+        });
+      }
+    }
+
     // Insere usuário no Supabase
     const { data: user, error: dbError } = await supabase
       .from('users')
@@ -123,30 +138,43 @@ const getUserByAuthId = async (req, res) => {
   try {
     const { authUserId } = req.params;
 
-    if (!authUserId) {
+    if (!authUserId || authUserId.trim() === '') {
       return res.status(400).json({
         error: 'Auth User ID é obrigatório'
       });
     }
 
-    const { data: user, error: dbError } = await supabase
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(authUserId.trim())) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    // Use order by created_at and limit to get the most recent user
+    // This handles cases where there might be duplicate users
+    const { data: users, error: dbError } = await supabase
       .from('users')
       .select('*')
-      .eq('auth_user_id', authUserId)
-      .single();
+      .eq('auth_user_id', authUserId.trim())
+      .order('created_at', { ascending: false })
+      .limit(1);
 
     if (dbError) {
-      if (dbError.code === 'PGRST116') {
-        return res.status(404).json({
-          error: 'Usuário não encontrado'
-        });
-      }
-      
       console.error('Database error:', dbError);
       return res.status(500).json({
         error: 'Erro ao buscar usuário'
       });
     }
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({
+        error: 'Usuário não encontrado'
+      });
+    }
+
+    const user = users[0];
 
     res.json({
       user: {

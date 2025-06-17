@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,13 +21,17 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, plan, clearData } = useUserStore();
   const { signOut } = useAuthStore();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   if (!user) {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar style="light" />
         <View style={styles.noDataContainer}>
-          <Text style={styles.noDataText}>Nenhum usuário encontrado</Text>
+          <ActivityIndicator size="large" color={ProRunnerColors.primary} />
+          <Text style={styles.noDataText}>
+            {isLoggingOut ? 'Saindo...' : 'Carregando...'}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -43,13 +48,16 @@ export default function ProfileScreen() {
           style: 'default',
           onPress: async () => {
             try {
+              setIsLoggingOut(true);
               // Faz logout do Supabase Auth
               await signOut();
               // Limpa dados locais
               clearData();
-              // Vai para login (o app/index.tsx irá redirecionar automaticamente)
+              // Redireciona diretamente para login
+              router.replace('/auth/login');
             } catch (error) {
               console.error('Error during logout:', error);
+              setIsLoggingOut(false);
               Alert.alert('Erro', 'Erro ao fazer logout. Tente novamente.');
             }
           },

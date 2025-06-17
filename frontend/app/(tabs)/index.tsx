@@ -111,24 +111,133 @@ export default function HomeScreen() {
 
 
 
-  const getNextWorkout = () => {
-    const workouts = [
-      { type: 'regenerativo', distance: '5km', emoji: '🌱' },
-      { type: 'tempo', distance: '8km', emoji: '🔥' },
-      { type: 'longao', distance: '12km', emoji: '🏃‍♂️' },
-      { type: 'tiros', distance: '6km', emoji: '⚡' },
-    ];
+  // Get current week and today's workout from the plan
+  const getCurrentWorkout = () => {
+    if (!plan || !plan.weeks || plan.weeks.length === 0) {
+      return null;
+    }
+
+    // Find current week (first incomplete week)
+    const currentWeek = plan.weeks.find(week => 
+      week.workouts.some(workout => !workout.completed)
+    );
+
+    if (!currentWeek) {
+      return null;
+    }
+
+    // Find next uncompleted workout
+    const nextWorkout = currentWeek.workouts.find(workout => !workout.completed);
     
-    return workouts[completedWorkouts % workouts.length];
+    if (!nextWorkout) {
+      return null;
+    }
+
+    return {
+      ...nextWorkout,
+      week: currentWeek.week,
+      emoji: getWorkoutEmoji(nextWorkout.type)
+    };
   };
 
-  const nextWorkout = getNextWorkout();
-  const weeklyFrequency = 3; // Default 3x per week - will be replaced by user's plan frequency
-  const weekProgress = (completedWorkouts / weeklyFrequency) * 100;
+  const getWorkoutEmoji = (type: string) => {
+    const emojiMap: Record<string, string> = {
+      'regenerativo': '🌱',
+      'tempo': '🔥',
+      'longao': '🏃‍♂️',
+      'tiros': '⚡',
+      'velocidade': '🚀',
+      'intervalado': '⏱️',
+      'fartlek': '🎯'
+    };
+    return emojiMap[type] || '🏃‍♂️';
+  };
+
+  // Calculate pace for specific workout types
+  const calculateWorkoutPace = (type: string, basePace: string) => {
+    if (!basePace) return null;
+    
+    // Parse base pace (format: "5:30")
+    const [minutes, seconds] = basePace.split(':').map(Number);
+    const basePaceSeconds = minutes * 60 + seconds;
+    
+    let adjustment = 0;
+    let zone = '';
+    
+    switch (type) {
+      case 'regenerativo':
+        adjustment = 60; // +1 minute per km
+        zone = 'Zona 1-2 (Recuperação)';
+        break;
+      case 'tempo':
+        adjustment = -20; // -20 seconds per km
+        zone = 'Zona 3-4 (Tempo)';
+        break;
+      case 'tiros':
+      case 'velocidade':
+        adjustment = -60; // -1 minute per km
+        zone = 'Zona 4-5 (VO2 Max)';
+        break;
+      case 'longao':
+        adjustment = 30; // +30 seconds per km
+        zone = 'Zona 1-2 (Aeróbico)';
+        break;
+      case 'intervalado':
+        adjustment = -40; // -40 seconds per km
+        zone = 'Zona 4 (Limiar)';
+        break;
+      default:
+        adjustment = 0;
+        zone = 'Zona 2-3 (Base)';
+    }
+    
+    const targetPaceSeconds = basePaceSeconds + adjustment;
+    const targetMinutes = Math.floor(targetPaceSeconds / 60);
+    const targetSecondsRemainder = targetPaceSeconds % 60;
+    
+    return {
+      pace: `${targetMinutes}:${targetSecondsRemainder.toString().padStart(2, '0')}`,
+      zone
+    };
+  };
+
+  const currentWorkout = getCurrentWorkout();
+  const workoutPaceInfo = currentWorkout && plan?.base_pace ? 
+    calculateWorkoutPace(currentWorkout.type, plan.base_pace) : null;
+    
+  // Calculate progress based on current week
+  const getCurrentWeekProgress = () => {
+    if (!plan || !plan.weeks || plan.weeks.length === 0) {
+      return { completed: 0, total: 3, percentage: 0 };
+    }
+
+    const currentWeek = plan.weeks.find(week => 
+      week.workouts.some(workout => !workout.completed)
+    );
+
+    if (!currentWeek) {
+      return { completed: plan.weeks[0]?.workouts.length || 3, total: plan.weeks[0]?.workouts.length || 3, percentage: 100 };
+    }
+
+    const completedCount = currentWeek.workouts.filter(w => w.completed).length;
+    const totalCount = currentWeek.workouts.length;
+    
+    return {
+      completed: completedCount,
+      total: totalCount,
+      percentage: (completedCount / totalCount) * 100
+    };
+  };
+
+  const weekProgress = getCurrentWeekProgress();
 
   const handleStartWorkout = () => {
-    setCompletedWorkouts(prev => Math.min(prev + 1, weeklyFrequency));
-    Alert.alert('Parabéns! 🎉', 'Treino registrado com sucesso!');
+    if (currentWorkout) {
+      // Mark current workout as completed
+      // This would normally update the plan via API
+      setCompletedWorkouts(prev => Math.min(prev + 1, weekProgress.total));
+      Alert.alert('Parabéns! 🎉', 'Treino registrado com sucesso!');
+    }
   };
 
   const handleResetWeek = () => {
@@ -169,9 +278,114 @@ export default function HomeScreen() {
               {plan ? `Plano: ${plan.goal.replace(/_/g, ' ')}` : 'Configurando seu plano...'}
             </Text>
           </View>
-          <View style={styles.heroImage}>
-            <Text style={styles.heroEmoji}>🏃‍♂️</Text>
-            <Text style={styles.heroText}>Sua jornada começa aqui</Text>
+        </View>
+
+        {/* Current Workout - Now at the top */}
+        {currentWorkout && (
+          <View style={styles.nextWorkoutSection}>
+            <Text style={styles.sectionTitle}>Próximo Treino</Text>
+            
+            <View style={styles.workoutCard}>
+              <View style={styles.workoutIcon}>
+                <Text style={styles.workoutEmoji}>{currentWorkout.emoji}</Text>
+              </View>
+              
+              <Text style={styles.workoutTitle}>
+                {currentWorkout.title || currentWorkout.type.charAt(0).toUpperCase() + currentWorkout.type.slice(1)}
+              </Text>
+              <Text style={styles.workoutDistance}>
+                {currentWorkout.distance}km • {currentWorkout.day}
+              </Text>
+              
+              {/* Workout Details */}
+              <View style={styles.workoutDetailsContainer}>
+                {workoutPaceInfo && (
+                  <View style={styles.workoutDetail}>
+                    <Text style={styles.detailLabel}>Pace Alvo:</Text>
+                    <Text style={styles.detailValue}>{workoutPaceInfo.pace}/km</Text>
+                  </View>
+                )}
+                
+                {workoutPaceInfo && (
+                  <View style={styles.workoutDetail}>
+                    <Text style={styles.detailLabel}>Zona:</Text>
+                    <Text style={styles.detailZone}>{workoutPaceInfo.zone}</Text>
+                  </View>
+                )}
+                
+                <View style={styles.workoutDetail}>
+                  <Text style={styles.detailLabel}>Intensidade:</Text>
+                  <Text style={styles.detailValue}>{currentWorkout.intensity}</Text>
+                </View>
+              </View>
+              
+              {currentWorkout.description && (
+                <View style={styles.workoutDescription}>
+                  <Text style={styles.descriptionTitle}>Descrição:</Text>
+                  <Text style={styles.descriptionText}>{currentWorkout.description}</Text>
+                </View>
+              )}
+              
+              <Button
+                title="🏃‍♂️ Começar Treino"
+                onPress={handleStartWorkout}
+                style={styles.startButton}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Week Completed - Moved up */}
+        {!currentWorkout && weekProgress.percentage >= 100 && (
+          <View style={styles.completedSection}>
+            <View style={styles.workoutIcon}>
+              <Text style={styles.workoutEmoji}>🏆</Text>
+            </View>
+            <Text style={styles.completedTitle}>Parabéns!</Text>
+            <Text style={styles.completedSubtitle}>
+              Você completou sua meta semanal de {weekProgress.total} treinos!
+            </Text>
+            
+            <Button
+              title="🔄 Nova Semana"
+              onPress={handleResetWeek}
+              style={styles.resetButton}
+            />
+          </View>
+        )}
+
+        {/* Week Progress */}
+        <View style={styles.progressSection}>
+          <Text style={styles.sectionTitle}>Resumo da Semana</Text>
+          
+          <View style={styles.progressCard}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressTitle}>
+                {weekProgress.completed} de {weekProgress.total} treinos
+              </Text>
+              <Text style={styles.progressPercentage}>
+                {Math.round(weekProgress.percentage)}%
+              </Text>
+            </View>
+            
+            <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBar, { width: `${weekProgress.percentage}%` as any }]} />
+            </View>
+            
+            <View style={styles.progressStats}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{weekProgress.completed}</Text>
+                <Text style={styles.statLabel}>Concluídos</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{weekProgress.total - weekProgress.completed}</Text>
+                <Text style={styles.statLabel}>Restantes</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{weekProgress.total}</Text>
+                <Text style={styles.statLabel}>Meta</Text>
+              </View>
+            </View>
           </View>
         </View>
 
@@ -201,88 +415,6 @@ export default function HomeScreen() {
             </Text>
           </View>
         </View>
-
-
-
-        {/* Week Progress */}
-        <View style={styles.progressSection}>
-          <Text style={styles.sectionTitle}>Resumo da Semana</Text>
-          
-          <View style={styles.progressCard}>
-            <View style={styles.progressHeader}>
-              <Text style={styles.progressTitle}>
-                {completedWorkouts} de {weeklyFrequency} treinos
-              </Text>
-              <Text style={styles.progressPercentage}>
-                {Math.round(weekProgress)}%
-              </Text>
-            </View>
-            
-            <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, { width: `${weekProgress}%` }]} />
-            </View>
-            
-            <View style={styles.progressStats}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{completedWorkouts}</Text>
-                <Text style={styles.statLabel}>Concluídos</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{weeklyFrequency - completedWorkouts}</Text>
-                <Text style={styles.statLabel}>Restantes</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{weeklyFrequency}</Text>
-                <Text style={styles.statLabel}>Meta</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Next Workout */}
-        {completedWorkouts < weeklyFrequency && (
-          <View style={styles.nextWorkoutSection}>
-            <Text style={styles.sectionTitle}>Próximo Treino</Text>
-            
-            <View style={styles.workoutCard}>
-              <View style={styles.workoutIcon}>
-                <Text style={styles.workoutEmoji}>{nextWorkout.emoji}</Text>
-              </View>
-              
-              <Text style={styles.workoutTitle}>
-                {nextWorkout.type.charAt(0).toUpperCase() + nextWorkout.type.slice(1)}
-              </Text>
-              <Text style={styles.workoutDistance}>
-                {nextWorkout.distance}
-              </Text>
-              
-              <Button
-                title="🏃‍♂️ Começar Treino"
-                onPress={handleStartWorkout}
-                style={styles.startButton}
-              />
-            </View>
-          </View>
-        )}
-
-        {/* Week Completed */}
-        {completedWorkouts >= weeklyFrequency && (
-          <View style={styles.completedSection}>
-            <View style={styles.workoutIcon}>
-              <Text style={styles.workoutEmoji}>🏆</Text>
-            </View>
-            <Text style={styles.completedTitle}>Parabéns!</Text>
-            <Text style={styles.completedSubtitle}>
-              Você completou sua meta semanal de {weeklyFrequency} treinos!
-            </Text>
-            
-            <Button
-              title="🔄 Nova Semana"
-              onPress={handleResetWeek}
-              style={styles.resetButton}
-            />
-          </View>
-        )}
 
         <View style={styles.spacer} />
       </ScrollView>
@@ -472,6 +604,53 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: ProRunnerColors.textSecondary,
     marginBottom: 20,
+  },
+  workoutDetailsContainer: {
+    width: '100%',
+    marginBottom: 16,
+  },
+  workoutDetail: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 4,
+    backgroundColor: ProRunnerColors.background,
+    borderRadius: 8,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: ProRunnerColors.textSecondary,
+  },
+  detailValue: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: ProRunnerColors.textPrimary,
+  },
+  detailZone: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: ProRunnerColors.primary,
+  },
+  workoutDescription: {
+    width: '100%',
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: ProRunnerColors.background,
+    borderRadius: 8,
+  },
+  descriptionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: ProRunnerColors.textSecondary,
+    marginBottom: 4,
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: ProRunnerColors.textPrimary,
+    lineHeight: 20,
   },
   startButton: {
     width: '100%',

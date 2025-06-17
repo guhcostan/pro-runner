@@ -16,6 +16,7 @@ import { ProRunnerColors } from '../../constants/Colors';
 import { Button } from '../../components/ui/Button';
 import { useUserStore } from '../../store/userStore';
 import { useAuthStore } from '../../store/authStore';
+import { translateFitnessLevel, getGoalDisplayName } from '../../lib/utils';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -121,10 +122,7 @@ export default function ProfileScreen() {
             <View style={styles.dataRow}>
               <Text style={styles.dataLabel}>Objetivo:</Text>
               <Text style={[styles.dataValue, styles.goalValue]}>
-                {user.goal ? 
-                  user.goal.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 
-                  'Melhorar Tempo'
-                }
+                {user.goal ? getGoalDisplayName(user.goal) : 'Melhorar Tempo'}
               </Text>
             </View>
           </View>
@@ -142,10 +140,10 @@ export default function ProfileScreen() {
                 </Text>
               </View>
               
-              <View style={styles.dataRow}>
-                <Text style={styles.dataLabel}>Nível:</Text>
-                <Text style={styles.dataValue}>{plan.fitness_level}</Text>
-              </View>
+                          <View style={styles.dataRow}>
+              <Text style={styles.dataLabel}>Nível:</Text>
+              <Text style={styles.dataValue}>{translateFitnessLevel(plan.fitness_level)}</Text>
+            </View>
               
               <View style={styles.dataRow}>
                 <Text style={styles.dataLabel}>Pace Base:</Text>

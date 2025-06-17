@@ -20,10 +20,11 @@ export default function GeneratingPlanScreen() {
   const { user, setPlan, isCreatingPlan, setCreatingPlan } = useUserStore();
   
   // Verifica se é uma redefinição de plano
-  const isRedefining = params.redefining === 'true';
+  const isRedefining = params?.redefining === 'true';
 
   useEffect(() => {
     generatePlan();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const generatePlan = async () => {

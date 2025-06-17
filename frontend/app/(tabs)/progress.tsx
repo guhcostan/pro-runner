@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { ProRunnerColors } from '../../constants/Colors';
 import { useUserStore } from '../../store/userStore';
+import { translateFitnessLevel, getGoalDisplayName } from '../../lib/utils';
 
 export default function ProgressScreen() {
   const { plan } = useUserStore();
@@ -85,12 +86,12 @@ export default function ProgressScreen() {
           
           <View style={styles.infoCard}>
             <Text style={styles.infoLabel}>Objetivo:</Text>
-            <Text style={styles.infoValue}>{plan.goal.replace(/_/g, ' ')}</Text>
+            <Text style={styles.infoValue}>{getGoalDisplayName(plan.goal)}</Text>
           </View>
 
           <View style={styles.infoCard}>
             <Text style={styles.infoLabel}>Nível de Fitness:</Text>
-            <Text style={styles.infoValue}>{plan.fitness_level}</Text>
+                          <Text style={styles.infoValue}>{translateFitnessLevel(plan.fitness_level)}</Text>
           </View>
 
           <View style={styles.infoCard}>

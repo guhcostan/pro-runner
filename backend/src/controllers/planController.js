@@ -171,7 +171,7 @@ async function getPlanByUserId(req, res) {
     }));
 
     res.json({
-      plans: formattedPlans
+      plan: formattedPlans[0] // Retorna apenas o primeiro plano, como esperado pelo frontend
     });
 
   } catch (error) {

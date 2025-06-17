@@ -38,7 +38,7 @@ export default function OnboardingScreen() {
   const { user: authUser } = useAuthStore();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [isRedefining] = useState(params.redefining === 'true');
+  const [isRedefining] = useState(params?.redefining === 'true');
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -54,12 +54,12 @@ export default function OnboardingScreen() {
   useEffect(() => {
     if (isRedefining && user) {
       setFormData({
-        name: user.name,
-        height: user.height.toString(),
-        weight: user.weight.toString(),
-        personal_record_5k: user.personal_record_5k,
-        goal: user.goal,
-        weekly_frequency: user.weekly_frequency,
+        name: user.name || '',
+        height: user.height?.toString() || '',
+        weight: user.weight?.toString() || '',
+        personal_record_5k: user.personal_record_5k || '30:00',
+        goal: user.goal || 'run_5k',
+        weekly_frequency: user.weekly_frequency || 3,
       });
     }
   }, [isRedefining, user]);

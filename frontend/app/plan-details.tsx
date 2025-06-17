@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { ProRunnerColors } from '../constants/Colors';
 import { useUserStore } from '../store/userStore';
+import { translateFitnessLevel, getGoalDisplayName } from '../lib/utils';
 
 export default function PlanDetailsScreen() {
   const router = useRouter();
@@ -103,7 +104,7 @@ export default function PlanDetailsScreen() {
           <Text style={styles.cardTitle}>📋 Resumo do Plano</Text>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Objetivo:</Text>
-            <Text style={styles.summaryValue}>{plan.goal.replace(/_/g, ' ')}</Text>
+            <Text style={styles.summaryValue}>{getGoalDisplayName(plan.goal)}</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Duração:</Text>
@@ -111,7 +112,7 @@ export default function PlanDetailsScreen() {
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Nível:</Text>
-            <Text style={styles.summaryValue}>{plan.fitness_level}</Text>
+            <Text style={styles.summaryValue}>{translateFitnessLevel(plan.fitness_level)}</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Pace Base:</Text>

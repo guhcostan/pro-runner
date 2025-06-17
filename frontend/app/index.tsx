@@ -10,79 +10,85 @@ import { apiService } from '../services/api';
 
 export default function IndexScreen() {
   const router = useRouter();
-  const { isOnboardingComplete, user, plan, setUser, setPlan, setOnboardingComplete } = useUserStore();
+  const { user, plan, setUser, setPlan, setOnboardingComplete } = useUserStore();
   const { isAuthenticated, user: authUser, initialize } = useAuthStore();
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     initialize();
   }, []);
 
-  // Quando usuário é criado no onboarding, verifica se precisa navegar
-  useEffect(() => {
-    if (isAuthenticated && authUser && user && !plan && !isInitializing) {
-      // Usuário foi criado mas sem plano, vai para geração
-      router.replace('/generating-plan');
-    } else if (isAuthenticated && authUser && user && plan && !isInitializing) {
-      // Usuário e plano existem, vai para home
-      router.replace('/(tabs)');
-    }
-  }, [user, plan, isInitializing]);
-
   useEffect(() => {
     const initializeApp = async () => {
+      // Evita múltiplas execuções
+      if (hasInitialized) return;
+      
+      // Aguarda autenticação estar definida
+      if (isAuthenticated === null) return;
+      
       if (!isAuthenticated || !authUser) {
-        setIsInitializing(false);
+        setHasInitialized(true);
         router.replace('/auth/login');
         return;
       }
 
+      setHasInitialized(true);
+
       try {
-        // Primeiro tenta carregar dados do usuário
+        console.log('🔄 Inicializando app...');
+        
+        // Se já tem usuário e plano em cache, vai direto para dashboard
+        if (user && plan) {
+          console.log('✅ Cache found - going to dashboard');
+          router.replace('/(tabs)');
+          return;
+        }
+
+        // Carrega dados do usuário do backend
+        console.log('📡 Loading user data...');
         const userData = await apiService.getUserByAuthId(authUser.id);
         
-        if (userData) {
-          setUser(userData);
-          setOnboardingComplete(true);
-          
-          // Usuário existe, agora tenta carregar o plano
-          try {
-            const planData = await apiService.getPlanByUserId(userData.id);
-            if (planData?.plan) {
-              setPlan(planData.plan);
-              setIsInitializing(false);
-              router.replace('/(tabs)');
-              return;
-            }
-          } catch (planError) {
-            console.log('No plan found for user, will need to create one');
-          }
-          
-          // Tem usuário mas não tem plano
-          setIsInitializing(false);
-          router.replace('/generating-plan');
-          return;
-        } else {
-          // Não tem dados do usuário, vai para onboarding
-          setIsInitializing(false);
+        if (!userData) {
+          console.log('👤 No user found - going to onboarding');
           router.replace('/onboarding');
           return;
         }
+
+        setUser(userData);
+        setOnboardingComplete(true);
+        
+        // Se já tem plano em cache, vai para dashboard
+        if (plan) {
+          console.log('✅ User loaded, plan in cache - going to dashboard');
+          router.replace('/(tabs)');
+          return;
+        }
+
+        // Carrega plano do backend
+        console.log('📋 Loading plan data...');
+        try {
+          const planData = await apiService.getPlanByUserId(userData.id);
+          if (planData?.plan) {
+            console.log('✅ Plan loaded - going to dashboard');
+            setPlan(planData.plan);
+            router.replace('/(tabs)');
+          } else {
+            console.log('📝 No plan found - going to plan generation');
+            router.replace('/generating-plan');
+          }
+        } catch (planError) {
+          console.log('📝 Plan fetch error - going to plan generation');
+          router.replace('/generating-plan');
+        }
+        
       } catch (error) {
-        console.error('Error loading user data:', error);
-        setIsInitializing(false);
+        console.error('❌ Error loading data:', error);
         router.replace('/onboarding');
       }
     };
 
-    // Só executa quando está autenticado
-    if (isAuthenticated !== null && authUser) {
-      initializeApp();
-    } else if (isAuthenticated === false) {
-      setIsInitializing(false);
-      router.replace('/auth/login');
-    }
-  }, [isAuthenticated, authUser]);
+    initializeApp();
+  }, [isAuthenticated, authUser, hasInitialized]);
 
   return (
     <View style={styles.container}>

@@ -57,7 +57,11 @@ const createUser = async (req, res) => {
           user: {
             id: updatedUser.id,
             name: updatedUser.name,
+            height: updatedUser.height,
+            weight: updatedUser.weight,
+            personal_record_5k: updatedUser.personal_record_5k,
             goal: updatedUser.goal,
+            weekly_frequency: updatedUser.weekly_frequency,
             created_at: updatedUser.created_at
           }
         });
@@ -93,7 +97,11 @@ const createUser = async (req, res) => {
       user: {
         id: user.id,
         name: user.name,
+        height: user.height,
+        weight: user.weight,
+        personal_record_5k: user.personal_record_5k,
         goal: user.goal,
+        weekly_frequency: user.weekly_frequency,
         created_at: user.created_at
       }
     });

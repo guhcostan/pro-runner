@@ -189,4 +189,34 @@ export const t = (key: string, params?: Record<string, string | number>): string
   }
   
   return value;
-}; 
+};
+
+export const fitnessLevels = {
+  pt: {
+    beginner: 'Iniciante',
+    beginner_intermediate: 'Iniciante-Intermediário', 
+    intermediate: 'Intermediário',
+    advanced: 'Avançado'
+  },
+  en: {
+    beginner: 'Beginner',
+    beginner_intermediate: 'Beginner-Intermediate',
+    intermediate: 'Intermediate', 
+    advanced: 'Advanced'
+  }
+} as const;
+
+export const workoutTypes = {
+  pt: {
+    longao: 'Corrida Longa',
+    tiros: 'Treino de Velocidade',
+    tempo: 'Treino Tempo',
+    regenerativo: 'Corrida Regenerativa'
+  },
+  en: {
+    longao: 'Long Run',
+    tiros: 'Speed Workout',
+    tempo: 'Tempo Run',
+    regenerativo: 'Recovery Run'
+  }
+} as const; 

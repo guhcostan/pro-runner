@@ -201,6 +201,160 @@ function calculateFitnessLevel(userData) {
 }
 
 /**
+ * Calcula dados de progressão esperada ao longo do plano
+ * @param {Object} fitnessInfo - Informações de fitness atuais
+ * @param {Object} capabilities - Capacidades estimadas do atleta
+ * @param {string} goal - Objetivo do usuário
+ * @param {number} totalWeeks - Total de semanas do plano
+ * @param {number} weeklyFrequency - Frequência semanal de treinos
+ * @returns {Object} Dados de progressão
+ */
+function calculateProgressionData(fitnessInfo, capabilities, goal, totalWeeks, weeklyFrequency) {
+  const currentVDOT = capabilities.vdot;
+  const currentTime5k = fitnessInfo.time5kSeconds;
+  
+  // Estimativa de melhoria do VDOT baseada no objetivo e duração do plano
+  const vdotImprovement = calculateVDOTImprovement(goal, totalWeeks, weeklyFrequency, currentVDOT);
+  const finalVDOT = currentVDOT + vdotImprovement;
+  
+  // Calcula novo tempo de 5K baseado no VDOT final
+  const finalTime5k = calculateTime5kFromVDOT(finalVDOT);
+  const finalPaces = calculateTrainingPaces(finalTime5k);
+  
+  // Calcula capacidades finais
+  const finalCapabilities = estimateMaxSupportableDistance(finalTime5k, weeklyFrequency);
+  
+  // Volume semanal esperado
+  const currentWeeklyVolume = capabilities.safeWeeklyVolume;
+  const finalWeeklyVolume = finalCapabilities.safeWeeklyVolume;
+  
+  // Distância máxima do longão
+  const currentMaxLongRun = capabilities.maxLongRunStart;
+  const finalMaxLongRun = finalCapabilities.maxLongRunPeak;
+  
+  // Estimativa de tempos para diferentes distâncias
+  const currentEstimatedTimes = capabilities.estimatedTimes;
+  const finalEstimatedTimes = finalCapabilities.estimatedTimes;
+  
+  return {
+    current: {
+      vdot: Math.round(currentVDOT * 10) / 10,
+      time5k: secondsToTime(currentTime5k),
+      pace5k: secondsToTime(currentTime5k / 5),
+      paces: fitnessInfo.paces,
+      weeklyVolume: currentWeeklyVolume,
+      maxLongRun: currentMaxLongRun,
+      estimatedTimes: {
+        '5k': secondsToTime(currentTime5k),
+        '10k': secondsToTime(currentEstimatedTimes['10k']),
+        'half': secondsToTime(currentEstimatedTimes['half']),
+        'marathon': secondsToTime(currentEstimatedTimes['marathon'])
+      }
+    },
+    final: {
+      vdot: Math.round(finalVDOT * 10) / 10,
+      time5k: secondsToTime(finalTime5k),
+      pace5k: secondsToTime(finalTime5k / 5),
+      paces: finalPaces,
+      weeklyVolume: finalWeeklyVolume,
+      maxLongRun: finalMaxLongRun,
+      estimatedTimes: {
+        '5k': secondsToTime(finalTime5k),
+        '10k': secondsToTime(finalEstimatedTimes['10k']),
+        'half': secondsToTime(finalEstimatedTimes['half']),
+        'marathon': secondsToTime(finalEstimatedTimes['marathon'])
+      }
+    },
+    improvements: {
+      vdot: Math.round(vdotImprovement * 10) / 10,
+      time5k: secondsToTime(Math.abs(currentTime5k - finalTime5k)),
+      pace5k: secondsToTime(Math.abs((currentTime5k / 5) - (finalTime5k / 5))),
+      weeklyVolume: finalWeeklyVolume - currentWeeklyVolume,
+      maxLongRun: finalMaxLongRun - currentMaxLongRun,
+      percentageImprovement: Math.round(((currentTime5k - finalTime5k) / currentTime5k) * 100 * 10) / 10
+    }
+  };
+}
+
+/**
+ * Calcula melhoria esperada do VDOT baseada no objetivo e parâmetros do plano
+ * @param {string} goal - Objetivo do usuário
+ * @param {number} totalWeeks - Total de semanas do plano
+ * @param {number} weeklyFrequency - Frequência semanal de treinos
+ * @param {number} currentVDOT - VDOT atual
+ * @returns {number} Melhoria esperada do VDOT
+ */
+function calculateVDOTImprovement(goal, totalWeeks, weeklyFrequency, currentVDOT) {
+  // Taxa base de melhoria por semana (conservadora)
+  const baseImprovementPerWeek = 0.15; // 0.15 pontos VDOT por semana
+  
+  // Multiplicadores baseados no objetivo
+  const goalMultipliers = {
+    'start_running': 1.2,      // Iniciantes melhoram mais rapidamente
+    'run_5k': 1.0,            // Base
+    'run_10k': 1.1,           // Melhoria moderada
+    'half_marathon': 1.2,     // Treino mais estruturado
+    'marathon': 1.3,          // Máxima melhoria com volume alto
+    'improve_time': 1.4       // Foco específico em performance
+  };
+  
+  // Multiplicador de frequência (mais treinos = mais melhoria)
+  const frequencyMultipliers = {
+    1: 0.5,
+    2: 0.7,
+    3: 1.0,
+    4: 1.2,
+    5: 1.3,
+    6: 1.4
+  };
+  
+  // Diminui a taxa de melhoria para atletas mais avançados (lei dos retornos decrescentes)
+  let levelMultiplier = 1.0;
+  if (currentVDOT >= 55) {
+    levelMultiplier = 0.6; // Atletas avançados melhoram mais devagar
+  } else if (currentVDOT >= 45) {
+    levelMultiplier = 0.8; // Intermediários
+  } else if (currentVDOT >= 35) {
+    levelMultiplier = 1.0; // Iniciantes intermediários
+  } else {
+    levelMultiplier = 1.3; // Iniciantes melhoram mais rapidamente
+  }
+  
+  const goalMultiplier = goalMultipliers[goal] || goalMultipliers['run_5k'];
+  const frequencyMultiplier = frequencyMultipliers[weeklyFrequency] || frequencyMultipliers[3];
+  
+  const totalImprovement = baseImprovementPerWeek * totalWeeks * goalMultiplier * frequencyMultiplier * levelMultiplier;
+  
+  // Limita a melhoria máxima (realismo)
+  const maxImprovementPercentage = 0.25; // Máximo 25% de melhoria
+  const maxImprovement = currentVDOT * maxImprovementPercentage;
+  
+  return Math.min(totalImprovement, maxImprovement);
+}
+
+/**
+ * Calcula tempo de 5K baseado no VDOT (fórmula inversa de Jack Daniels)
+ * @param {number} vdot - VDOT do atleta
+ * @returns {number} Tempo de 5K em segundos
+ */
+function calculateTime5kFromVDOT(vdot) {
+  // Fórmula inversa aproximada: velocidade em m/min baseada no VDOT
+  // VDOT = -4.6 + 0.182258 * v + 0.000104 * v²
+  // Resolvendo para v usando fórmula quadrática
+  const a = 0.000104;
+  const b = 0.182258;
+  const c = -4.6 - vdot;
+  
+  const discriminant = b * b - 4 * a * c;
+  const velocity = (-b + Math.sqrt(discriminant)) / (2 * a); // metros por minuto
+  
+  const time5k = (5000 / velocity) * 60; // segundos
+  
+  // Validação de sanidade (entre 15 e 60 minutos)
+  return Math.max(900, Math.min(3600, Math.round(time5k)));
+}
+
+/**
  * Gera plano de treino baseado nos dados do usuário
  * @param {Object} userData - Dados do usuário
  * @returns {Object} Plano de treino completo
@@ -232,6 +386,9 @@ function generateTrainingPlan(userData) {
       validation.warning = `Tempo insuficiente para ${goal}. Considere uma data ${validation.recommendedWeeks} semanas à frente.`;
     }
   }
+
+  // Calcula dados de progressão esperada
+  const progressionData = calculateProgressionData(fitnessInfo, capabilities, finalGoal, totalWeeks, weekly_frequency);
   
   // Volume base baseado nas capacidades reais do atleta
   const baseVolume = capabilities.safeWeeklyVolume;
@@ -300,6 +457,7 @@ function generateTrainingPlan(userData) {
     total_weeks: totalWeeks,
     estimated_capabilities: capabilities,
     validation: validation,
+    progression_data: progressionData,
     weeks,
     created_at: new Date().toISOString()
   };
@@ -530,8 +688,6 @@ function generateIntervalWorkout(paces, weekNumber, volumeMultiplier, day, capab
     capabilities: capabilities
   };
 }
-
-
 
 module.exports = {
   generateTrainingPlan

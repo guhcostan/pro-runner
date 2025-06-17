@@ -33,9 +33,9 @@ export default function PlanScreen() {
 
     const goal = goalInfo[user.goal as keyof typeof goalInfo] || goalInfo['run_5k'];
     
-    // Calculate race date (8 weeks from plan creation)
+    // Calculate race date based on plan duration
     const raceDate = new Date(plan.created_at);
-    raceDate.setDate(raceDate.getDate() + (8 * 7)); // 8 weeks
+    raceDate.setDate(raceDate.getDate() + (plan.total_weeks * 7));
 
     // Calculate total distance
     const totalDistance = plan.weeks?.reduce((total: number, week: any) => 
@@ -44,13 +44,13 @@ export default function PlanScreen() {
     return {
       ...goal,
       raceDate,
-      totalWeeks: 8,
+      totalWeeks: plan.total_weeks,
       totalDistance,
     };
   }, [plan, user]);
 
   const progressInfo = useMemo(() => {
-    if (!plan?.weeks) return { completed: 0, total: 8, percentage: 0 };
+    if (!plan?.weeks) return { completed: 0, total: plan?.total_weeks || 8, percentage: 0 };
 
     const completedWeeks = plan.weeks.filter((week: any) => 
       week.workouts?.every((workout: any) => workout.completed)
@@ -58,8 +58,8 @@ export default function PlanScreen() {
 
     return {
       completed: completedWeeks,
-      total: 8,
-      percentage: Math.round((completedWeeks / 8) * 100),
+      total: plan.total_weeks,
+      percentage: Math.round((completedWeeks / plan.total_weeks) * 100),
     };
   }, [plan]);
 

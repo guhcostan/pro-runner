@@ -106,6 +106,80 @@ export default function ProgressScreen() {
             <Text style={styles.infoValue}>{plan.base_pace}/km</Text>
           </View>
         </View>
+
+        {/* Progression Expected */}
+        {plan.progression_data && (
+          <View style={styles.progressionContainer}>
+            <Text style={styles.progressionTitle}>🎯 Progressão Esperada</Text>
+            <Text style={styles.progressionSubtitle}>
+              O que você pode esperar ao final do plano:
+            </Text>
+            
+            <View style={styles.progressionCards}>
+              <View style={styles.progressionCard}>
+                <Text style={styles.progressionCardTitle}>⏱️ Pace 5K</Text>
+                <Text style={styles.currentValue}>{plan.progression_data.current.pace5k}/km</Text>
+                <Ionicons name="arrow-down" size={16} color={ProRunnerColors.primary} />
+                <Text style={styles.finalValue}>{plan.progression_data.final.pace5k}/km</Text>
+                <Text style={styles.improvementText}>
+                  {plan.progression_data.improvements.percentageImprovement}% mais rápido
+                </Text>
+              </View>
+
+              <View style={styles.progressionCard}>
+                <Text style={styles.progressionCardTitle}>💪 VDOT</Text>
+                <Text style={styles.currentValue}>{plan.progression_data.current.vdot}</Text>
+                <Ionicons name="arrow-up" size={16} color={ProRunnerColors.primary} />
+                <Text style={styles.finalValue}>{plan.progression_data.final.vdot}</Text>
+                <Text style={styles.improvementText}>
+                  +{plan.progression_data.improvements.vdot} pontos
+                </Text>
+              </View>
+
+              <View style={styles.progressionCard}>
+                <Text style={styles.progressionCardTitle}>🏃‍♂️ Longão</Text>
+                <Text style={styles.currentValue}>{plan.progression_data.current.maxLongRun}km</Text>
+                <Ionicons name="arrow-up" size={16} color={ProRunnerColors.primary} />
+                <Text style={styles.finalValue}>{plan.progression_data.final.maxLongRun}km</Text>
+                <Text style={styles.improvementText}>
+                  +{plan.progression_data.improvements.maxLongRun}km
+                </Text>
+              </View>
+
+              <View style={styles.progressionCard}>
+                <Text style={styles.progressionCardTitle}>📊 Volume</Text>
+                <Text style={styles.currentValue}>{plan.progression_data.current.weeklyVolume}km</Text>
+                <Ionicons name="arrow-up" size={16} color={ProRunnerColors.primary} />
+                <Text style={styles.finalValue}>{plan.progression_data.final.weeklyVolume}km</Text>
+                <Text style={styles.improvementText}>
+                  +{plan.progression_data.improvements.weeklyVolume}km/semana
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.timeProjections}>
+              <Text style={styles.timeProjectionsTitle}>Tempos Estimados no Final:</Text>
+              <View style={styles.timeGrid}>
+                <View style={styles.timeCard}>
+                  <Text style={styles.timeDistance}>5K</Text>
+                  <Text style={styles.timeValue}>{plan.progression_data.final.estimatedTimes['5k']}</Text>
+                </View>
+                <View style={styles.timeCard}>
+                  <Text style={styles.timeDistance}>10K</Text>
+                  <Text style={styles.timeValue}>{plan.progression_data.final.estimatedTimes['10k']}</Text>
+                </View>
+                <View style={styles.timeCard}>
+                  <Text style={styles.timeDistance}>21K</Text>
+                  <Text style={styles.timeValue}>{plan.progression_data.final.estimatedTimes['half']}</Text>
+                </View>
+                <View style={styles.timeCard}>
+                  <Text style={styles.timeDistance}>42K</Text>
+                  <Text style={styles.timeValue}>{plan.progression_data.final.estimatedTimes['marathon']}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -209,5 +283,87 @@ const styles = StyleSheet.create({
     color: ProRunnerColors.textPrimary,
     fontWeight: '600',
     textTransform: 'capitalize',
+  },
+  progressionContainer: {
+    padding: 24,
+    paddingBottom: 40,
+  },
+  progressionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 16,
+  },
+  progressionSubtitle: {
+    fontSize: 16,
+    color: ProRunnerColors.textSecondary,
+  },
+  progressionCards: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  progressionCard: {
+    backgroundColor: ProRunnerColors.surface,
+    borderRadius: 12,
+    padding: 20,
+    alignItems: 'center',
+    flex: 1,
+    minWidth: 150,
+    borderWidth: 1,
+    borderColor: ProRunnerColors.border,
+  },
+  progressionCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 8,
+  },
+  currentValue: {
+    fontSize: 14,
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 4,
+  },
+  finalValue: {
+    fontSize: 14,
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 4,
+  },
+  improvementText: {
+    fontSize: 12,
+    color: ProRunnerColors.textSecondary,
+  },
+  timeProjections: {
+    marginTop: 24,
+  },
+  timeProjectionsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 16,
+  },
+  timeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  timeCard: {
+    backgroundColor: ProRunnerColors.surface,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    flex: 1,
+    minWidth: 150,
+    borderWidth: 1,
+    borderColor: ProRunnerColors.border,
+  },
+  timeDistance: {
+    fontSize: 14,
+    color: ProRunnerColors.textSecondary,
+  },
+  timeValue: {
+    fontSize: 14,
+    color: ProRunnerColors.textPrimary,
+    fontWeight: 'bold',
   },
 }); 

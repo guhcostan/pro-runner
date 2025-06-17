@@ -13,22 +13,30 @@ const CollapsibleSection: React.FC<{
   icon: string;
   children: React.ReactNode;
   defaultExpanded?: boolean;
-}> = ({ title, icon, children, defaultExpanded = false }) => {
+  color?: string;
+}> = ({ title, icon, children, defaultExpanded = false, color = ProRunnerColors.primary }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
   return (
-    <View style={styles.collapsibleContainer}>
+    <View style={[styles.collapsibleContainer, { borderLeftColor: color }]}>
       <TouchableOpacity 
-        style={styles.collapsibleHeader}
+        style={[styles.collapsibleHeader, { backgroundColor: `${color}08` }]}
         onPress={() => setExpanded(!expanded)}
         activeOpacity={0.7}
       >
-        <Text style={styles.collapsibleTitle}>{icon} {title}</Text>
-        <Ionicons 
-          name={expanded ? 'chevron-up' : 'chevron-down'} 
-          size={20} 
-          color={ProRunnerColors.primary} 
-        />
+        <View style={styles.collapsibleHeaderContent}>
+          <View style={[styles.iconContainer, { backgroundColor: `${color}15` }]}>
+            <Text style={[styles.collapsibleIcon, { color }]}>{icon}</Text>
+          </View>
+          <Text style={styles.collapsibleTitle}>{title}</Text>
+        </View>
+        <View style={[styles.chevronContainer, { backgroundColor: expanded ? `${color}15` : 'transparent' }]}>
+          <Ionicons 
+            name={expanded ? 'chevron-up' : 'chevron-down'} 
+            size={20} 
+            color={color} 
+          />
+        </View>
       </TouchableOpacity>
       {expanded && (
         <View style={styles.collapsibleContent}>
@@ -407,7 +415,12 @@ export default function WorkoutDetailScreen() {
           )}
 
           {/* Warmup Suggestions */}
-          <CollapsibleSection title="Aquecimento" icon="🔥" defaultExpanded={false}>
+          <CollapsibleSection 
+            title="Aquecimento" 
+            icon="🔥" 
+            defaultExpanded={false}
+            color="#FF6B35"
+          >
             {warmupSuggestions.map((suggestion, index) => (
               <View key={index} style={styles.suggestionRow}>
                 <Text style={styles.suggestionText}>{suggestion}</Text>
@@ -416,7 +429,12 @@ export default function WorkoutDetailScreen() {
           </CollapsibleSection>
 
           {/* Cooldown Suggestions */}
-          <CollapsibleSection title="Desaquecimento" icon="❄️" defaultExpanded={false}>
+          <CollapsibleSection 
+            title="Desaquecimento" 
+            icon="❄️" 
+            defaultExpanded={false}
+            color="#4A90E2"
+          >
             {cooldownSuggestions.map((suggestion, index) => (
               <View key={index} style={styles.suggestionRow}>
                 <Text style={styles.suggestionText}>{suggestion}</Text>
@@ -425,7 +443,12 @@ export default function WorkoutDetailScreen() {
           </CollapsibleSection>
 
           {/* Training Tips */}
-          <CollapsibleSection title="Dicas de Treino" icon="💡" defaultExpanded={true}>
+          <CollapsibleSection 
+            title="Dicas de Treino" 
+            icon="💡" 
+            defaultExpanded={true}
+            color="#F5A623"
+          >
             <View style={styles.tipsCard}>
               {(workout.type === 'interval' || workout.type === 'tiros') && (
                 <>
@@ -655,19 +678,29 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   suggestionRow: {
-    marginBottom: 8,
+    marginBottom: 12,
+    paddingLeft: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: `${ProRunnerColors.primary}30`,
+    paddingVertical: 8,
   },
   suggestionText: {
-    fontSize: 14,
+    fontSize: 15,
     color: ProRunnerColors.textPrimary,
-    lineHeight: 20,
+    lineHeight: 22,
+    fontWeight: '500',
   },
   tipsCard: {
-    backgroundColor: `${ProRunnerColors.primary}10`,
+    backgroundColor: ProRunnerColors.surface,
     borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: ProRunnerColors.primary,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: `${ProRunnerColors.border}30`,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   tipsTitle: {
     fontSize: 14,
@@ -676,10 +709,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tipText: {
-    fontSize: 14,
+    fontSize: 15,
     color: ProRunnerColors.textPrimary,
-    marginBottom: 6,
-    lineHeight: 20,
+    marginBottom: 10,
+    lineHeight: 22,
+    fontWeight: '500',
   },
   detailedDescriptionCard: {
     backgroundColor: ProRunnerColors.surfaceLight,
@@ -708,30 +742,35 @@ const styles = StyleSheet.create({
   collapsibleContainer: {
     marginBottom: 16,
     backgroundColor: ProRunnerColors.surface,
-    borderRadius: 12,
+    borderRadius: 16,
+    borderLeftWidth: 4,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: `${ProRunnerColors.border}40`,
   },
   collapsibleHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: ProRunnerColors.surface,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: `${ProRunnerColors.border}20`,
   },
   collapsibleTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: ProRunnerColors.textPrimary,
+    flex: 1,
   },
   collapsibleContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     backgroundColor: ProRunnerColors.background,
   },
   nutritionCard: {
@@ -829,5 +868,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: ProRunnerColors.textSecondary,
     lineHeight: 20,
+  },
+  collapsibleHeaderContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  collapsibleIcon: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  chevronContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 }); 

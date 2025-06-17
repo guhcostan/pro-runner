@@ -63,7 +63,14 @@ export default function OnboardingStep2_5({
   suggestedDate.setDate(suggestedDate.getDate() + (duration.recommended * 7));
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
+    
+    if (event.type === 'dismissed') {
+      setShowDatePicker(false);
+      return;
+    }
     
     if (selectedDate) {
       // Validar se a data está dentro do período recomendado
@@ -86,6 +93,9 @@ export default function OnboardingStep2_5({
       }
       
       onSelectDate(selectedDate);
+      if (Platform.OS === 'ios') {
+        setShowDatePicker(false);
+      }
     }
   };
 
@@ -160,7 +170,7 @@ export default function OnboardingStep2_5({
             <Text style={styles.selectedDateText}>
               Perfeito! Você terá{' '}
               <Text style={styles.bold}>
-                {Math.ceil((goalDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7))} semanas
+                {Math.max(1, Math.ceil((goalDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 7)))} semanas
               </Text>{' '}
               para se preparar.
             </Text>
@@ -185,6 +195,8 @@ export default function OnboardingStep2_5({
           onChange={handleDateChange}
           minimumDate={minDate}
           maximumDate={maxDate}
+          locale="pt-BR"
+          textColor={ProRunnerColors.textPrimary}
         />
       )}
 

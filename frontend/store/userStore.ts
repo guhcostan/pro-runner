@@ -57,6 +57,46 @@ export interface GoalValidation {
   recommendedWeeks: number;
 }
 
+// Dados de progressão esperada ao longo do plano
+export interface ProgressionData {
+  current: {
+    vdot: number;
+    time5k: string;
+    pace5k: string;
+    paces: TrainingPaces;
+    weeklyVolume: number;
+    maxLongRun: number;
+    estimatedTimes: {
+      '5k': string;
+      '10k': string;
+      'half': string;
+      'marathon': string;
+    };
+  };
+  final: {
+    vdot: number;
+    time5k: string;
+    pace5k: string;
+    paces: TrainingPaces;
+    weeklyVolume: number;
+    maxLongRun: number;
+    estimatedTimes: {
+      '5k': string;
+      '10k': string;
+      'half': string;
+      'marathon': string;
+    };
+  };
+  improvements: {
+    vdot: number;
+    time5k: string;
+    pace5k: string;
+    weeklyVolume: number;
+    maxLongRun: number;
+    percentageImprovement: number;
+  };
+}
+
 // Nova estrutura de detalhes do treino baseada no VDOT
 export interface WorkoutDetails {
   distance?: number;
@@ -101,6 +141,7 @@ export interface TrainingPlan {
   total_weeks: number;
   estimated_capabilities: EstimatedCapabilities;
   validation: GoalValidation;
+  progression_data?: ProgressionData;
   weeks: Week[];
   created_at: string;
 }

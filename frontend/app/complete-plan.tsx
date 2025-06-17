@@ -235,6 +235,132 @@ export default function CompletePlanScreen() {
           )}
         </View>
 
+        {/* Progression Data */}
+        {plan.progression_data && (
+          <View style={styles.summaryCard}>
+            <Text style={styles.cardTitle}>📈 Progressão Esperada</Text>
+            <Text style={styles.progressionSubtitle}>Sua evolução ao longo do plano:</Text>
+            
+            {/* VDOT Progression */}
+            <View style={styles.progressionSection}>
+              <Text style={styles.progressionLabel}>💪 VDOT (Fitness Aeróbico)</Text>
+              <View style={styles.progressionRow}>
+                <View style={styles.progressionCurrent}>
+                  <Text style={styles.progressionTitle}>Atual</Text>
+                  <Text style={styles.progressionValue}>{plan.progression_data.current.vdot}</Text>
+                </View>
+                <View style={styles.progressionArrow}>
+                  <Ionicons name="arrow-forward" size={20} color={ProRunnerColors.primary} />
+                </View>
+                <View style={styles.progressionFinal}>
+                  <Text style={styles.progressionTitle}>Final</Text>
+                  <Text style={styles.progressionValue}>{plan.progression_data.final.vdot}</Text>
+                </View>
+                <View style={styles.progressionImprovement}>
+                  <Text style={styles.improvementText}>+{plan.progression_data.improvements.vdot}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Pace 5K Progression */}
+            <View style={styles.progressionSection}>
+              <Text style={styles.progressionLabel}>⏱️ Pace 5K</Text>
+              <View style={styles.progressionRow}>
+                <View style={styles.progressionCurrent}>
+                  <Text style={styles.progressionTitle}>Atual</Text>
+                  <Text style={styles.progressionValue}>{plan.progression_data.current.pace5k}/km</Text>
+                </View>
+                <View style={styles.progressionArrow}>
+                  <Ionicons name="arrow-forward" size={20} color={ProRunnerColors.primary} />
+                </View>
+                <View style={styles.progressionFinal}>
+                  <Text style={styles.progressionTitle}>Final</Text>
+                  <Text style={styles.progressionValue}>{plan.progression_data.final.pace5k}/km</Text>
+                </View>
+                <View style={styles.progressionImprovement}>
+                  <Text style={styles.improvementText}>-{plan.progression_data.improvements.pace5k}</Text>
+                </View>
+              </View>
+              <Text style={styles.percentageImprovement}>
+                ~{plan.progression_data.improvements.percentageImprovement}% mais rápido
+              </Text>
+            </View>
+
+            {/* Distance Progression */}
+            <View style={styles.progressionSection}>
+              <Text style={styles.progressionLabel}>🏃‍♂️ Distância Máxima (Longão)</Text>
+              <View style={styles.progressionRow}>
+                <View style={styles.progressionCurrent}>
+                  <Text style={styles.progressionTitle}>Atual</Text>
+                  <Text style={styles.progressionValue}>{plan.progression_data.current.maxLongRun}km</Text>
+                </View>
+                <View style={styles.progressionArrow}>
+                  <Ionicons name="arrow-forward" size={20} color={ProRunnerColors.primary} />
+                </View>
+                <View style={styles.progressionFinal}>
+                  <Text style={styles.progressionTitle}>Final</Text>
+                  <Text style={styles.progressionValue}>{plan.progression_data.final.maxLongRun}km</Text>
+                </View>
+                <View style={styles.progressionImprovement}>
+                  <Text style={styles.improvementText}>+{plan.progression_data.improvements.maxLongRun}km</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Volume Progression */}
+            <View style={styles.progressionSection}>
+              <Text style={styles.progressionLabel}>📊 Volume Semanal</Text>
+              <View style={styles.progressionRow}>
+                <View style={styles.progressionCurrent}>
+                  <Text style={styles.progressionTitle}>Atual</Text>
+                  <Text style={styles.progressionValue}>{plan.progression_data.current.weeklyVolume}km</Text>
+                </View>
+                <View style={styles.progressionArrow}>
+                  <Ionicons name="arrow-forward" size={20} color={ProRunnerColors.primary} />
+                </View>
+                <View style={styles.progressionFinal}>
+                  <Text style={styles.progressionTitle}>Final</Text>
+                  <Text style={styles.progressionValue}>{plan.progression_data.final.weeklyVolume}km</Text>
+                </View>
+                <View style={styles.progressionImprovement}>
+                  <Text style={styles.improvementText}>+{plan.progression_data.improvements.weeklyVolume}km</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Time Predictions */}
+            <View style={styles.progressionSection}>
+              <Text style={styles.progressionLabel}>🎯 Tempos Estimados</Text>
+              <View style={styles.timeEstimates}>
+                <View style={styles.timeRow}>
+                  <Text style={styles.distanceLabel}>5K:</Text>
+                  <Text style={styles.currentTime}>{plan.progression_data.current.estimatedTimes['5k']}</Text>
+                  <Ionicons name="arrow-forward" size={16} color={ProRunnerColors.primary} />
+                  <Text style={styles.finalTime}>{plan.progression_data.final.estimatedTimes['5k']}</Text>
+                </View>
+                <View style={styles.timeRow}>
+                  <Text style={styles.distanceLabel}>10K:</Text>
+                  <Text style={styles.currentTime}>{plan.progression_data.current.estimatedTimes['10k']}</Text>
+                  <Ionicons name="arrow-forward" size={16} color={ProRunnerColors.primary} />
+                  <Text style={styles.finalTime}>{plan.progression_data.final.estimatedTimes['10k']}</Text>
+                </View>
+                <View style={styles.timeRow}>
+                  <Text style={styles.distanceLabel}>21K:</Text>
+                  <Text style={styles.currentTime}>{plan.progression_data.current.estimatedTimes['half']}</Text>
+                  <Ionicons name="arrow-forward" size={16} color={ProRunnerColors.primary} />
+                  <Text style={styles.finalTime}>{plan.progression_data.final.estimatedTimes['half']}</Text>
+                </View>
+                <View style={styles.timeRow}>
+                  <Text style={styles.distanceLabel}>42K:</Text>
+                  <Text style={styles.currentTime}>{plan.progression_data.current.estimatedTimes['marathon']}</Text>
+                  <Ionicons name="arrow-forward" size={16} color={ProRunnerColors.primary} />
+                  <Text style={styles.finalTime}>{plan.progression_data.final.estimatedTimes['marathon']}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
+
         {/* VDOT Training Paces */}
         {plan.training_paces && (
           <View style={styles.summaryCard}>
@@ -620,5 +746,84 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'capitalize',
+  },
+  progressionSubtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 16,
+  },
+  progressionSection: {
+    marginBottom: 16,
+  },
+  progressionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: ProRunnerColors.textPrimary,
+    marginBottom: 8,
+  },
+  progressionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  progressionCurrent: {
+    flex: 1,
+  },
+  progressionArrow: {
+    marginHorizontal: 8,
+  },
+  progressionFinal: {
+    flex: 1,
+  },
+  progressionImprovement: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  progressionTitle: {
+    fontSize: 12,
+    color: ProRunnerColors.textSecondary,
+    marginBottom: 2,
+  },
+  progressionValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: ProRunnerColors.textPrimary,
+  },
+  improvementText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: ProRunnerColors.primary,
+  },
+  percentageImprovement: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: ProRunnerColors.primary,
+    marginTop: 4,
+  },
+  timeEstimates: {
+    marginBottom: 16,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  distanceLabel: {
+    flex: 1,
+    fontSize: 12,
+    color: ProRunnerColors.textSecondary,
+  },
+  currentTime: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    color: ProRunnerColors.primary,
+  },
+  finalTime: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    color: ProRunnerColors.primary,
   },
 }); 

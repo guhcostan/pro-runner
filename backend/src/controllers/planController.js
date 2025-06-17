@@ -103,7 +103,13 @@ async function createPlan(req, res) {
         total_weeks: savedPlan.total_weeks,
         weekly_frequency: trainingPlan.weekly_frequency,
         weeks: savedPlan.plan_data,
-        created_at: savedPlan.created_at
+        created_at: savedPlan.created_at,
+        vdot: trainingPlan.vdot,
+        training_paces: trainingPlan.training_paces,
+        estimated_capabilities: trainingPlan.estimated_capabilities,
+        validation: trainingPlan.validation,
+        progression_data: trainingPlan.progression_data,
+        originalGoal: trainingPlan.originalGoal
       }
     });
 

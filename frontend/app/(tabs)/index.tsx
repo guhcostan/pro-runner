@@ -11,12 +11,11 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 import { ProRunnerColors } from '../../constants/Colors';
 import { useUserStore } from '../../store/userStore';
 import { apiService } from '../../services/api';
-import { t, getCurrentLanguage } from '../../constants/i18n';
-import { locationService, LocationData, WeatherData } from '../../services/location';
 import { getGoalDisplayName } from '../../lib/utils';
 
 export default function HomeScreen() {
@@ -28,9 +27,7 @@ export default function HomeScreen() {
   } = useUserStore();
   
   const [refreshing, setRefreshing] = useState(false);
-  const [dailyQuote, setDailyQuote] = useState<string>('');
-  const [location, setLocation] = useState<LocationData | null>(null);
-  const [weather, setWeather] = useState<WeatherData | null>(null);
+
 
   const loadPlan = useCallback(async () => {
     if (!user) return;
@@ -62,42 +59,11 @@ export default function HomeScreen() {
     if (!plan) {
       loadPlan();
     }
-    
-    // Load initial data
-    loadDailyQuote();
-    loadLocationAndWeather();
   }, [user, plan, loadPlan]);
-
-  const loadDailyQuote = async () => {
-    try {
-      const response = await apiService.getDailyQuote(getCurrentLanguage());
-      setDailyQuote(response.data.quote);
-    } catch (error) {
-      console.error('Error loading daily quote:', error);
-      setDailyQuote(t('motivational_fallback'));
-    }
-  };
-
-  const loadLocationAndWeather = async () => {
-    try {
-      const userLocation = await locationService.getCurrentLocation();
-      if (userLocation) {
-        setLocation(userLocation);
-        const weatherData = await locationService.getWeatherData(userLocation);
-        setWeather(weatherData);
-      }
-    } catch (error) {
-      console.error('Error loading location/weather:', error);
-    }
-  };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.all([
-      loadPlan(),
-      loadDailyQuote(),
-      loadLocationAndWeather()
-    ]);
+    await loadPlan();
     setRefreshing(false);
   };
 
@@ -484,32 +450,46 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Daily Motivation */}
-        <View style={styles.motivationCard}>
-          <Text style={styles.motivationTitle}>💫 {t('inspiration_of_day')}</Text>
-          <Text style={styles.motivationalText}>
-            {dailyQuote || 'Cada quilômetro é uma vitória. Continue correndo!'}
-          </Text>
-        </View>
+        {/* Quick Access */}
+        <View style={styles.quickAccessSection}>
+          <Text style={styles.sectionTitle}>Acesso Rápido</Text>
+          
+          <View style={styles.quickAccessGrid}>
+            <TouchableOpacity 
+              style={styles.quickAccessCard}
+              onPress={() => router.push('/(tabs)/today')}
+            >
+              <Ionicons name="calendar-outline" size={24} color={ProRunnerColors.primary} />
+              <Text style={styles.quickAccessText}>Hoje</Text>
+              <Text style={styles.quickAccessSubtext}>Treino e clima</Text>
+            </TouchableOpacity>
 
-        {/* Weather Card */}
-        <View style={styles.weatherCard}>
-          <View style={styles.weatherHeader}>
-            <Text style={styles.weatherTitle}>{t('weather_today')}</Text>
-            <Text style={styles.weatherLocation}>
-              {location ? `${location.city}, ${location.country}` : t('loading')}
-            </Text>
-          </View>
-          <View style={styles.weatherContent}>
-            <Text style={styles.weatherTemp}>
-              {weather ? `${weather.temperature}°C` : '--°C'}
-            </Text>
-            <Text style={styles.weatherDesc}>
-              {weather ? weather.description : t('loading')}
-            </Text>
-            <Text style={styles.weatherTip}>
-              {weather ? weather.runningTip : t('perfect_for_running')}
-            </Text>
+            <TouchableOpacity 
+              style={styles.quickAccessCard}
+              onPress={() => router.push('/complete-plan')}
+            >
+              <Ionicons name="list-outline" size={24} color={ProRunnerColors.primary} />
+              <Text style={styles.quickAccessText}>Plano</Text>
+              <Text style={styles.quickAccessSubtext}>Visão completa</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.quickAccessCard}
+              onPress={() => router.push('/(tabs)/insights')}
+            >
+              <Ionicons name="analytics-outline" size={24} color={ProRunnerColors.primary} />
+              <Text style={styles.quickAccessText}>Insights</Text>
+              <Text style={styles.quickAccessSubtext}>Analytics</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.quickAccessCard}
+              onPress={() => router.push('/progress')}
+            >
+              <Ionicons name="trending-up-outline" size={24} color={ProRunnerColors.primary} />
+              <Text style={styles.quickAccessText}>Progresso</Text>
+              <Text style={styles.quickAccessSubtext}>Evolução</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -949,5 +929,37 @@ const styles = StyleSheet.create({
     color: ProRunnerColors.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
+  },
+  quickAccessSection: {
+    paddingHorizontal: 24,
+    marginBottom: 32,
+  },
+  quickAccessGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  quickAccessCard: {
+    backgroundColor: ProRunnerColors.surface,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    flex: 1,
+    minWidth: '47%',
+    borderWidth: 1,
+    borderColor: ProRunnerColors.border,
+  },
+  quickAccessText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: ProRunnerColors.textPrimary,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  quickAccessSubtext: {
+    fontSize: 12,
+    color: ProRunnerColors.textSecondary,
+    marginTop: 2,
+    textAlign: 'center',
   },
 });

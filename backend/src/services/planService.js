@@ -464,7 +464,7 @@ function generateTrainingPlan(userData) {
 }
 
 /**
- * Gera treinos semanais validados
+ * Gera treinos semanais validados com variedade científica
  * @param {number} weeklyVolume - Volume semanal em km
  * @param {Object} fitnessInfo - Informações de fitness
  * @param {string} goal - Objetivo do usuário
@@ -509,25 +509,106 @@ function generateWeeklyWorkouts(weeklyVolume, fitnessInfo, goal, weekNumber, wee
   // Aplica multiplicador ao longão também
   longRunDistance = Math.round(longRunDistance * volumeMultiplier);
   
-  // Distribui treinos baseado na frequência semanal
+  // NOVA LÓGICA: Sistema de variedade baseado em metodologias científicas
+  // Distribui treinos baseado na frequência semanal com MUITO mais variedade
   switch (weeklyFrequency) {
-  case 2:
-    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
+  case 2: {
+    // Para 2x semana: alterna entre diferentes tipos de treinos de qualidade + longão variado
+    const qualityWorkouts = [
+      () => generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+      () => generateFartlekWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+      () => generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+      () => generateHillRepeatWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+      () => generateProgressiveRunWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+      () => generateLadderWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities)
+    ];
+    
+    const longRunVariations = [
+      () => generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities),
+      () => generateLongRunWithSurgesWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities),
+      () => generateProgressiveLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities)
+    ];
+    
+    // Seleciona treino baseado na semana para criar variedade
+    const qualityIndex = (weekNumber - 1) % qualityWorkouts.length;
+    const longIndex = (weekNumber - 1) % longRunVariations.length;
+    
+    workouts.push(qualityWorkouts[qualityIndex]());
+    workouts.push(longRunVariations[longIndex]());
     break;
+  }
       
-  case 3:
-    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-    workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.25 * volumeMultiplier), capabilities.currentMaxDistance * 0.3), 'Quinta-feira', capabilities));
-    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
+  case 3: {
+    // Para 3x semana: ainda mais variedade
+    const week3Patterns = [
+      // Padrão 1: Interval + Easy + Long
+      () => [
+        generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.25 * volumeMultiplier), capabilities.currentMaxDistance * 0.3), 'Quinta-feira', capabilities),
+        generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities)
+      ],
+      // Padrão 2: Fartlek + Tempo + Long com surges
+      () => [
+        generateFartlekWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities),
+        generateLongRunWithSurgesWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities)
+      ],
+      // Padrão 3: Hill + Progressive + Long
+      () => [
+        generateHillRepeatWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateProgressiveRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities),
+        generateProgressiveLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities)
+      ],
+      // Padrão 4: Ladder + Easy + Long
+      () => [
+        generateLadderWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.25 * volumeMultiplier), capabilities.currentMaxDistance * 0.3), 'Quinta-feira', capabilities),
+        generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities)
+      ]
+    ];
+    
+    const pattern3Index = (weekNumber - 1) % week3Patterns.length;
+    workouts.push(...week3Patterns[pattern3Index]());
     break;
+  }
       
-  case 4:
-    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-    workouts.push(generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities));
-    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
-    workouts.push(generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities));
+  case 4: {
+    // Para 4x semana: máxima variedade com periodização
+    const week4Patterns = [
+      // Padrão 1: Interval + Tempo + Long + Recovery
+      () => [
+        generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities),
+        generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities),
+        generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities)
+      ],
+      // Padrão 2: Fartlek + Hill + Long com surges + Easy
+      () => [
+        generateFartlekWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateHillRepeatWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities),
+        generateLongRunWithSurgesWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities),
+        generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities)
+      ],
+      // Padrão 3: Ladder + Progressive + Long + Recovery
+      () => [
+        generateLadderWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateProgressiveRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities),
+        generateProgressiveLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities),
+        generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities)
+      ],
+      // Padrão 4: Tempo + Interval + Long + Easy
+      () => [
+        generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities),
+        generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities),
+        generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities)
+      ]
+    ];
+    
+    const pattern4Index = (weekNumber - 1) % week4Patterns.length;
+    workouts.push(...week4Patterns[pattern4Index]());
     break;
+  }
       
   case 5:
     workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.2 * volumeMultiplier), capabilities.currentMaxDistance * 0.25), 'Segunda-feira', capabilities));
@@ -546,14 +627,30 @@ function generateWeeklyWorkouts(weeklyVolume, fitnessInfo, goal, weekNumber, wee
     workouts.push(generateRecoveryRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.15 * volumeMultiplier), 6), 'Domingo', capabilities));
     break;
       
-  default:
-    // Fallback para 3 treinos/semana
-    workouts.push(generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities));
-    workouts.push(generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.25 * volumeMultiplier), capabilities.currentMaxDistance * 0.3), 'Quinta-feira', capabilities));
-    workouts.push(generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities));
+  default: {
+    // Fallback para 3 treinos/semana com variedade
+    const defaultVariations = [
+      () => [
+        generateIntervalWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateEasyRunWorkout(paces, Math.min(Math.round(weeklyVolume * 0.25 * volumeMultiplier), capabilities.currentMaxDistance * 0.3), 'Quinta-feira', capabilities),
+        generateLongRunWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities)
+      ],
+      () => [
+        generateFartlekWorkout(paces, weekNumber, volumeMultiplier, 'Terça-feira', capabilities),
+        generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, 'Quinta-feira', capabilities),
+        generateLongRunWithSurgesWorkout(paces, longRunDistance, volumeMultiplier, 'Sábado', capabilities)
+      ]
+    ];
+    
+    const defaultIndex = (weekNumber - 1) % defaultVariations.length;
+    workouts.push(...defaultVariations[defaultIndex]());
+  }
   }
   
-  return workouts;
+  // AJUSTE FINAL: Garante que a soma dos treinos bate com o volume semanal
+  const adjustedWorkouts = adjustWorkoutsToTargetVolume(workouts, weeklyVolume);
+  
+  return adjustedWorkouts;
 }
 
 // Funções auxiliares para gerar cada tipo de treino específico
@@ -610,6 +707,10 @@ function generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, day, capab
   
   const duration = Math.round(baseDuration * volumeMultiplier);
   
+  // Calcula distância baseada na duração e pace de tempo
+  const tempoPaceSeconds = paces.tempoSeconds;
+  const estimatedDistance = Math.round(((duration * 60) / tempoPaceSeconds) * 10) / 10;
+  
   return {
     id: `tempo_${day}_week_${weekNumber}`,
     type: 'tempo',
@@ -617,10 +718,10 @@ function generateTempoRunWorkout(paces, weekNumber, volumeMultiplier, day, capab
     workoutDetails: {
       duration: duration,
       pace: paces.tempo,
+      distance: estimatedDistance, // Adiciona distância calculada
       description: 'Ritmo de limiar anaeróbico. Esforço controlado e sustentado.'
     },
     detailedDescription: `${duration} minutos em pace ${paces.tempo}/km. Desenvolvimento do limiar anaeróbico.`,
-    duration: duration,
     capabilities: capabilities
   };
 }
@@ -681,12 +782,443 @@ function generateIntervalWorkout(paces, weekNumber, volumeMultiplier, day, capab
       intervalDuration: intervalDuration,
       recoveryTime: 2,
       pace: paces.interval,
+      distance: Math.round(totalDistance * 10) / 10, // Adiciona distância calculada
       description: 'Treino intervalado na velocidade de 5K. Desenvolve VO2max.'
     },
     detailedDescription: `${intervals}x${intervalDuration}min @ ${paces.interval}/km com 2min recuperação. Total: ~${Math.round(totalDistance)}km.`,
     tips: 'Mantenha o pace de 5K durante os intervalos. Recuperação ativa em trote leve.',
     capabilities: capabilities
   };
+}
+
+/**
+ * Gera treino Fartlek baseado na metodologia sueca
+ * @param {Object} paces - Paces calculados para diferentes zonas
+ * @param {number} weekNumber - Número da semana no plano
+ * @param {number} volumeMultiplier - Multiplicador de volume
+ * @param {string} day - Dia da semana
+ * @param {Object} capabilities - Capacidades estimadas do atleta
+ * @returns {Object} Treino Fartlek
+ */
+function generateFartlekWorkout(paces, weekNumber, volumeMultiplier, day, capabilities) {
+  // Duração baseada na progressão e capacidade
+  let baseDuration;
+  if (capabilities.vdot >= 50) {
+    baseDuration = Math.min(25 + weekNumber * 2, 45); // 25-45 minutos
+  } else if (capabilities.vdot >= 40) {
+    baseDuration = Math.min(20 + weekNumber * 2, 40); // 20-40 minutos
+  } else {
+    baseDuration = Math.min(15 + weekNumber, 30); // 15-30 minutos
+  }
+  
+  const duration = Math.round(baseDuration * volumeMultiplier);
+  
+  // Variações de Fartlek baseadas na semana
+  const fartlekVariations = [
+    {
+      name: 'Fartlek Clássico',
+      structure: 'Surges livres de 30s-3min',
+      description: 'Varie o ritmo conforme se sente. Acelere por pontos de referência (postes, árvores).'
+    },
+    {
+      name: 'Fartlek Estruturado',
+      structure: '8x(1min forte + 1min fácil)',
+      description: 'Estrutura fixa: 1 minuto em pace de 5K, 1 minuto em pace fácil.'
+    },
+    {
+      name: 'Fartlek Piramidal',
+      structure: '1-2-3-2-1min com recuperação igual',
+      description: 'Pirâmide de esforços: 1, 2, 3, 2, 1 minutos com recuperação igual.'
+    },
+    {
+      name: 'Fartlek Natural',
+      structure: 'Surges por terreno',
+      description: 'Acelere nas subidas, mantenha nas descidas, varie no plano.'
+    }
+  ];
+  
+  const variation = fartlekVariations[(weekNumber - 1) % fartlekVariations.length];
+  
+  // Calcula distância estimada baseada na duração e pace médio
+  const avgPaceSeconds = (paces.easySeconds + paces.intervalSeconds) / 2;
+  const estimatedDistance = Math.round(((duration * 60) / avgPaceSeconds) * 10) / 10;
+
+  return {
+    id: `fartlek_${day}_week_${weekNumber}`,
+    type: 'fartlek',
+    day,
+    workoutDetails: {
+      duration: duration,
+      pace: `${paces.easy} - ${paces.interval}`,
+      distance: estimatedDistance, // Adiciona distância estimada
+      description: `${variation.name}: jogo de velocidade com mudanças de ritmo.`,
+      structure: variation.structure
+    },
+    detailedDescription: `${duration}min de ${variation.name}. ${variation.description}`,
+    tips: 'Fartlek = "jogo de velocidade". Divirta-se variando o ritmo conforme se sente!',
+    capabilities: capabilities
+  };
+}
+
+/**
+ * Gera treino de subidas (Hill Repeats)
+ * @param {Object} paces - Paces calculados para diferentes zonas
+ * @param {number} weekNumber - Número da semana no plano
+ * @param {number} volumeMultiplier - Multiplicador de volume
+ * @param {string} day - Dia da semana
+ * @param {Object} capabilities - Capacidades estimadas do atleta
+ * @returns {Object} Treino de subidas
+ */
+function generateHillRepeatWorkout(paces, weekNumber, volumeMultiplier, day, capabilities) {
+  // Número de repetições baseado na progressão
+  const baseRepeats = Math.min(4 + Math.floor(weekNumber / 2), 10);
+  const repeats = Math.round(baseRepeats * volumeMultiplier);
+  
+  // Duração das subidas baseada na capacidade
+  let hillDuration;
+  if (capabilities.vdot >= 50) {
+    hillDuration = weekNumber <= 4 ? 90 : weekNumber <= 8 ? 120 : 150; // 90-150 segundos
+  } else if (capabilities.vdot >= 40) {
+    hillDuration = weekNumber <= 4 ? 60 : weekNumber <= 8 ? 90 : 120; // 60-120 segundos
+  } else {
+    hillDuration = weekNumber <= 6 ? 45 : 60; // 45-60 segundos
+  }
+  
+  // Calcula distância estimada: ~200m por repetição + aquecimento/volta à calma
+  const estimatedDistance = Math.round(((repeats * 0.4) + 2.5) * 10) / 10;
+
+  return {
+    id: `hill_${day}_week_${weekNumber}`,
+    type: 'hill',
+    day,
+    workoutDetails: {
+      repeats: repeats,
+      hillDuration: hillDuration,
+      incline: '5-8%',
+      pace: 'Esforço de 5K em subida',
+      distance: estimatedDistance, // Adiciona distância estimada
+      description: 'Treino de força e potência em subidas. Desenvolve força específica.'
+    },
+    detailedDescription: `${repeats}x${hillDuration}s em subida de 5-8%. Descida caminhando para recuperação total.`,
+    tips: 'Mantenha postura ereta, passos curtos e frequentes. Foque na força, não na velocidade.',
+    capabilities: capabilities
+  };
+}
+
+/**
+ * Gera treino progressivo
+ * @param {Object} paces - Paces calculados para diferentes zonas
+ * @param {number} weekNumber - Número da semana no plano
+ * @param {number} volumeMultiplier - Multiplicador de volume
+ * @param {string} day - Dia da semana
+ * @param {Object} capabilities - Capacidades estimadas do atleta
+ * @returns {Object} Treino progressivo
+ */
+function generateProgressiveRunWorkout(paces, weekNumber, volumeMultiplier, day, capabilities) {
+  // Distância baseada na capacidade e progressão
+  let baseDistance;
+  if (capabilities.vdot >= 50) {
+    baseDistance = Math.min(6 + weekNumber * 0.5, 12); // 6-12 km
+  } else if (capabilities.vdot >= 40) {
+    baseDistance = Math.min(5 + weekNumber * 0.5, 10); // 5-10 km
+  } else {
+    baseDistance = Math.min(4 + weekNumber * 0.3, 8); // 4-8 km
+  }
+  
+  const distance = Math.round(baseDistance * volumeMultiplier);
+  
+  // Estrutura progressiva baseada na distância
+  const thirds = Math.round(distance / 3);
+  
+  return {
+    id: `progressive_${day}_week_${weekNumber}`,
+    type: 'progressive',
+    day,
+    workoutDetails: {
+      distance: distance,
+      structure: `${thirds}km fácil + ${thirds}km moderado + ${thirds}km forte`,
+      pace: `${paces.easy} → ${paces.tempo}`,
+      description: 'Corrida progressiva: acelera gradualmente a cada terço.'
+    },
+    detailedDescription: `${distance}km progressivos: ${thirds}km @ ${paces.easy}/km, ${thirds}km @ ${paces.long}/km, ${thirds}km @ ${paces.tempo}/km.`,
+    tips: 'Comece devagar e acelere gradualmente. Último terço deve ser desafiador mas controlado.',
+    capabilities: capabilities
+  };
+}
+
+/**
+ * Gera treino em escada (Ladder Workout)
+ * @param {Object} paces - Paces calculados para diferentes zonas
+ * @param {number} weekNumber - Número da semana no plano
+ * @param {number} volumeMultiplier - Multiplicador de volume
+ * @param {string} day - Dia da semana
+ * @param {Object} capabilities - Capacidades estimadas do atleta
+ * @returns {Object} Treino em escada
+ */
+function generateLadderWorkout(paces, weekNumber, volumeMultiplier, day, capabilities) {
+  // Estruturas de escada baseadas na capacidade
+  let ladderStructure;
+  let totalMinutes;
+  if (capabilities.vdot >= 50) {
+    ladderStructure = weekNumber <= 4 ? '1-2-3-2-1min' : '1-2-3-4-3-2-1min';
+    totalMinutes = weekNumber <= 4 ? 18 : 32; // (1+2+3+2+1)*2 ou (1+2+3+4+3+2+1)*2
+  } else if (capabilities.vdot >= 40) {
+    ladderStructure = weekNumber <= 4 ? '1-2-3-2-1min' : '2-3-4-3-2min';
+    totalMinutes = weekNumber <= 4 ? 18 : 28; // (1+2+3+2+1)*2 ou (2+3+4+3+2)*2
+  } else {
+    ladderStructure = '1-2-3-2-1min';
+    totalMinutes = 18; // (1+2+3+2+1)*2
+  }
+  
+  // Calcula distância baseada na duração total e pace de interval
+  const intervalPaceSeconds = paces.intervalSeconds;
+  const estimatedDistance = Math.round(((totalMinutes * 60) / intervalPaceSeconds) * 10) / 10;
+  
+  return {
+    id: `ladder_${day}_week_${weekNumber}`,
+    type: 'ladder',
+    day,
+    workoutDetails: {
+      structure: ladderStructure,
+      pace: paces.interval,
+      recoveryTime: 'Igual ao esforço',
+      distance: estimatedDistance, // Adiciona distância calculada
+      description: 'Treino em escada: intervalos crescentes e decrescentes.'
+    },
+    detailedDescription: `Escada ${ladderStructure} @ ${paces.interval}/km. Recuperação ativa igual ao esforço.`,
+    tips: 'Mantenha o mesmo pace em todos os intervalos. A dificuldade vem da duração crescente.',
+    capabilities: capabilities
+  };
+}
+
+/**
+ * Gera longão com surges
+ * @param {Object} paces - Paces calculados para diferentes zonas
+ * @param {number} distance - Distância do longão
+ * @param {number} volumeMultiplier - Multiplicador de volume
+ * @param {string} day - Dia da semana
+ * @param {Object} capabilities - Capacidades estimadas do atleta
+ * @returns {Object} Longão com surges
+ */
+function generateLongRunWithSurgesWorkout(paces, distance, volumeMultiplier, day, capabilities) {
+  const adjustedDistance = Math.min(
+    Math.round(distance * volumeMultiplier),
+    capabilities.maxLongRunPeak
+  );
+  
+  // Número de surges baseado na distância
+  const surges = Math.min(Math.floor(adjustedDistance / 2), 6);
+  
+  return {
+    id: `long_surges_${day}_distance_${adjustedDistance}`,
+    type: 'long_surges',
+    day,
+    workoutDetails: {
+      distance: Math.max(adjustedDistance, 5),
+      pace: paces.long,
+      surges: surges,
+      surgePace: paces.tempo,
+      description: 'Longão com surges de 1-2min em ritmo de limiar.'
+    },
+    detailedDescription: `${Math.max(adjustedDistance, 5)}km @ ${paces.long}/km com ${surges} surges de 1-2min @ ${paces.tempo}/km.`,
+    tips: 'Faça os surges nos últimos 60% da corrida. Volte ao pace base entre os surges.',
+    capabilities: capabilities
+  };
+}
+
+/**
+ * Gera longão progressivo
+ * @param {Object} paces - Paces calculados para diferentes zonas
+ * @param {number} distance - Distância do longão
+ * @param {number} volumeMultiplier - Multiplicador de volume
+ * @param {string} day - Dia da semana
+ * @param {Object} capabilities - Capacidades estimadas do atleta
+ * @returns {Object} Longão progressivo
+ */
+function generateProgressiveLongRunWorkout(paces, distance, volumeMultiplier, day, capabilities) {
+  const adjustedDistance = Math.min(
+    Math.round(distance * volumeMultiplier),
+    capabilities.maxLongRunPeak
+  );
+  
+  // Divide em terços para progressão
+  const firstThird = Math.round(adjustedDistance * 0.4);
+  const secondThird = Math.round(adjustedDistance * 0.3);
+  const finalThird = adjustedDistance - firstThird - secondThird;
+  
+  return {
+    id: `progressive_long_${day}_distance_${adjustedDistance}`,
+    type: 'progressive_long',
+    day,
+    workoutDetails: {
+      distance: Math.max(adjustedDistance, 5),
+      structure: `${firstThird}km fácil + ${secondThird}km moderado + ${finalThird}km forte`,
+      pace: `${paces.easy} → ${paces.tempo}`,
+      description: 'Longão progressivo: acelera gradualmente durante a corrida.'
+    },
+    detailedDescription: `${Math.max(adjustedDistance, 5)}km progressivos: ${firstThird}km @ ${paces.easy}/km, ${secondThird}km @ ${paces.long}/km, ${finalThird}km @ ${paces.tempo}/km.`,
+    tips: 'Metodologia africana: comece bem devagar e termine forte. Controle o esforço.',
+    capabilities: capabilities
+  };
+}
+
+/**
+ * Calcula a distância real de um treino baseado em seus detalhes
+ * @param {Object} workout - Objeto do treino
+ * @returns {number} Distância em km
+ */
+function calculateWorkoutDistance(workout) {
+  if (!workout.workoutDetails) return 0;
+  
+  const details = workout.workoutDetails;
+  
+  // Se tem distância direta, usa ela
+  if (details.distance) {
+    return details.distance;
+  }
+  
+  // Para treinos por tempo (fartlek, tempo)
+  if (details.duration && details.pace) {
+    const paceStr = details.pace.includes(' - ') ? details.pace.split(' - ')[0] : details.pace;
+    const paceMatch = paceStr.match(/(\d+):(\d+)/);
+    if (paceMatch) {
+      const paceSeconds = parseInt(paceMatch[1]) * 60 + parseInt(paceMatch[2]);
+      return (details.duration * 60) / paceSeconds;
+    }
+  }
+  
+  // Para treinos intervalados
+  if (details.intervals && details.intervalDuration && details.pace) {
+    const paceMatch = details.pace.match(/(\d+):(\d+)/);
+    if (paceMatch) {
+      const paceSeconds = parseInt(paceMatch[1]) * 60 + parseInt(paceMatch[2]);
+      const intervalDistance = (details.intervalDuration * 60) / paceSeconds;
+      // Adiciona distância de recuperação (estimada em pace fácil)
+      const recoveryDistance = (details.recoveryTime * 60) / 400; // ~6:40/km
+      return (intervalDistance + recoveryDistance) * details.intervals;
+    }
+  }
+  
+  // Para treinos de subida (estimativa baseada no tempo)
+  if (details.repeats && details.hillDuration) {
+    // Estima ~200m por repetição de subida + descida + aquecimento/volta à calma
+    const hillDistance = (details.repeats * 0.4) + 2; // +2km para aquecimento/volta à calma
+    return hillDistance;
+  }
+  
+  return 0;
+}
+
+/**
+ * Ajusta as distâncias dos treinos para bater com o volume semanal
+ * @param {Array} workouts - Array de treinos da semana
+ * @param {number} targetVolume - Volume alvo em km
+ * @returns {Array} Treinos ajustados
+ */
+function adjustWorkoutsToTargetVolume(workouts, targetVolume) {
+  if (!workouts || workouts.length === 0) return workouts;
+  
+  // Calcula volume atual
+  let currentVolume = 0;
+  workouts.forEach(workout => {
+    currentVolume += calculateWorkoutDistance(workout);
+  });
+  
+  // Se a diferença for pequena (< 0.5km), não ajusta
+  const difference = targetVolume - currentVolume;
+  if (Math.abs(difference) < 0.5) {
+    return workouts;
+  }
+  
+  // Identifica treinos que podem ser ajustados
+  const adjustableWorkouts = workouts.filter(w => 
+    w.workoutDetails && (
+      w.workoutDetails.distance || // Treinos com distância fixa
+      (w.workoutDetails.repeats && w.workoutDetails.hillDuration) || // Treinos de subida
+      (w.workoutDetails.duration) // Treinos por tempo
+    )
+  );
+  
+  if (adjustableWorkouts.length === 0) {
+    return workouts;
+  }
+  
+  // Prioriza ajustar treinos longos primeiro, depois outros
+  const longWorkouts = adjustableWorkouts.filter(w => 
+    w.type === 'long' || w.type === 'long_surges' || w.type === 'progressive_long' || w.type === 'easy' || w.type === 'progressive'
+  );
+  // Se a diferença for muito grande (>1.5km), ajusta todos os treinos
+  // Senão, prioriza treinos longos
+  const workoutsToAdjust = Math.abs(difference) > 1.5 ? adjustableWorkouts : 
+    (longWorkouts.length > 0 ? longWorkouts : adjustableWorkouts);
+  const adjustmentPerWorkout = difference / workoutsToAdjust.length;
+  
+  workoutsToAdjust.forEach(workout => {
+    if (workout.workoutDetails.distance) {
+      // Treinos com distância fixa
+      const oldDistance = workout.workoutDetails.distance;
+      const newDistance = Math.max(3, Math.round((oldDistance + adjustmentPerWorkout) * 10) / 10);
+      
+      workout.workoutDetails.distance = newDistance;
+      
+      if (workout.detailedDescription) {
+        workout.detailedDescription = workout.detailedDescription.replace(
+          /\d+(?:\.\d+)?km/,
+          `${newDistance}km`
+        );
+      }
+      
+      // Para treinos progressivos, ajusta a estrutura
+      if (workout.type === 'progressive_long' && workout.workoutDetails.structure) {
+        const thirds = Math.round(newDistance / 3);
+        const finalThird = newDistance - (thirds * 2);
+        workout.workoutDetails.structure = `${thirds}km fácil + ${thirds}km moderado + ${finalThird}km forte`;
+        
+        if (workout.detailedDescription) {
+          workout.detailedDescription = workout.detailedDescription.replace(
+            /\d+km @ .+?, \d+km @ .+?, \d+km @ .+?\./,
+            `${thirds}km @ ${workout.workoutDetails.pace.split(' → ')[0]}/km, ${thirds}km @ ${workout.workoutDetails.pace.split(' → ')[0]}/km, ${finalThird}km @ ${workout.workoutDetails.pace.split(' → ')[1]}/km.`
+          );
+        }
+      }
+    } else if (workout.workoutDetails.duration) {
+      // Treinos por tempo - ajusta duração
+      const oldDuration = workout.workoutDetails.duration;
+      const estimatedPace = workout.workoutDetails.pace.includes(' - ') ? 
+        workout.workoutDetails.pace.split(' - ')[0] : workout.workoutDetails.pace;
+      const paceMatch = estimatedPace.match(/(\d+):(\d+)/);
+      
+      if (paceMatch) {
+        const paceSeconds = parseInt(paceMatch[1]) * 60 + parseInt(paceMatch[2]);
+        const targetDurationMinutes = Math.max(5, (adjustmentPerWorkout * paceSeconds) / 60);
+        const newDuration = Math.round(oldDuration + targetDurationMinutes);
+        
+        workout.workoutDetails.duration = newDuration;
+        
+        if (workout.detailedDescription) {
+          workout.detailedDescription = workout.detailedDescription.replace(
+            /\d+min/,
+            `${newDuration}min`
+          );
+        }
+      }
+    } else if (workout.workoutDetails.repeats && workout.workoutDetails.hillDuration) {
+      // Treinos de subida - adiciona aquecimento/volta à calma
+      const currentDistance = calculateWorkoutDistance(workout);
+      const targetDistance = currentDistance + adjustmentPerWorkout;
+      
+      // Atualiza descrição para incluir aquecimento/volta à calma
+      if (workout.detailedDescription) {
+        const warmupCooldown = Math.round(adjustmentPerWorkout);
+        workout.detailedDescription = workout.detailedDescription.replace(
+          /\. Descida caminhando/,
+          `. Inclui ${warmupCooldown}km de aquecimento/volta à calma. Descida caminhando`
+        );
+      }
+    }
+  });
+  
+  return workouts;
 }
 
 module.exports = {

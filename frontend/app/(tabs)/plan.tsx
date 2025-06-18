@@ -170,67 +170,10 @@ export default function PlanScreen() {
             <Text style={styles.actionText}>Detalhes do Plano</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => {
-              Alert.alert(
-                'Estatísticas do Plano',
-                `📊 Progresso Atual: ${progressInfo.completed}/${planInfo.totalWeeks} semanas\n\n🎯 Objetivo: ${planInfo.name}\n📅 Data da Corrida: ${formatRaceDate(planInfo.raceDate)}\n📏 Distância Total: ${planInfo.totalDistance}km`,
-                [{ text: 'OK' }]
-              );
-            }}
-          >
-            <View style={styles.actionIcon}>
-              <Text style={styles.actionIconText}>📊</Text>
-            </View>
-            <Text style={styles.actionText}>Estatísticas</Text>
-          </TouchableOpacity>
+
         </View>
 
-        {/* Insights Section */}
-        <View style={styles.insightsSection}>
-          <View style={styles.insightsHeader}>
-            <Text style={styles.insightsTitle}>PACE INSIGHTS</Text>
-            <Text style={styles.insightsPowered}>Powered by ProRunner</Text>
-          </View>
 
-          <View style={styles.monitoringCard}>
-            <Text style={styles.monitoringTitle}>Monitoring</Text>
-            <Text style={styles.monitoringText}>
-              Próximo treino de velocidade: {new Date().getDate() + 2} de {new Date().toLocaleDateString('pt-BR', { month: 'short' })}.
-            </Text>
-          </View>
-
-          {/* Time Estimation */}
-          <View style={styles.timeEstimationCard}>
-            <View style={styles.timeHeader}>
-              <Text style={styles.timeTitle}>ESTIMATED {planInfo.distance} TIME</Text>
-              <TouchableOpacity onPress={() => {
-                Alert.alert(
-                  'Estimativa de Tempo',
-                  'Este tempo é calculado baseado no seu ritmo atual e nível de condicionamento. Pode variar conforme seu progresso no treino.',
-                  [{ text: 'Entendi' }]
-                );
-              }}>
-                <Text style={styles.timeInfo}>ⓘ</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <Text style={styles.timeSubtitle}>Em {planInfo.totalWeeks} semanas</Text>
-            
-            <View style={styles.timeDisplay}>
-              <View style={styles.timeBadge}>
-                <Text style={styles.timeBadgeText}>{planInfo.distance}</Text>
-              </View>
-              <Text style={styles.timeRange}>
-                {planInfo.distance === '42K' ? '3:45:00 - 4:15:00' :
-                 planInfo.distance === '21K' ? '1:50:00 - 1:57:00' : 
-                 planInfo.distance === '10K' ? '45:00 - 52:00' :
-                 planInfo.distance === '5K' ? '22:00 - 28:00' : '22:00 - 28:00'}
-              </Text>
-            </View>
-          </View>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -376,96 +319,7 @@ const styles = StyleSheet.create({
     color: ProRunnerColors.textPrimary,
     textAlign: 'center',
   },
-  insightsSection: {
-    paddingHorizontal: 24,
-    paddingBottom: 100,
-  },
-  insightsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  insightsTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: ProRunnerColors.textPrimary,
-    marginRight: 8,
-  },
-  insightsPowered: {
-    fontSize: 14,
-    color: ProRunnerColors.textSecondary,
-    flex: 1,
-  },
-  insightsArrow: {
-    padding: 4,
-  },
-  insightsArrowText: {
-    fontSize: 20,
-    color: ProRunnerColors.primary,
-  },
-  monitoringCard: {
-    backgroundColor: ProRunnerColors.cardBackground,
-    padding: 20,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  monitoringTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: ProRunnerColors.textPrimary,
-    marginBottom: 8,
-  },
-  monitoringText: {
-    fontSize: 16,
-    color: ProRunnerColors.textSecondary,
-    lineHeight: 24,
-  },
-  timeEstimationCard: {
-    backgroundColor: ProRunnerColors.cardBackground,
-    padding: 20,
-    borderRadius: 12,
-  },
-  timeHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  timeTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: ProRunnerColors.textPrimary,
-  },
-  timeInfo: {
-    fontSize: 16,
-    color: ProRunnerColors.textSecondary,
-  },
-  timeSubtitle: {
-    fontSize: 14,
-    color: ProRunnerColors.textSecondary,
-    marginBottom: 16,
-  },
-  timeDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  timeBadge: {
-    backgroundColor: ProRunnerColors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  timeBadgeText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: ProRunnerColors.background,
-  },
-  timeRange: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: ProRunnerColors.textPrimary,
-  },
+
   emptyState: {
     flex: 1,
     justifyContent: 'center',

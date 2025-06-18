@@ -60,6 +60,17 @@ export default function CompletePlanScreen() {
       'tempo': 'Tempo',
       'long': 'Longão',
       'recovery': 'Regenerativo',
+      // Novos tipos baseados em metodologias científicas
+      'fartlek': 'Fartlek',
+      'hill': 'Subidas',
+      'progressive': 'Progressivo',
+      'ladder': 'Escada',
+      'long_surges': 'Longão + Surges',
+      'progressive_long': 'Longão Progressivo',
+      // Compatibilidade com nomes antigos
+      'tiros': 'Tiros',
+      'longao': 'Longão',
+      'regenerativo': 'Regenerativo'
     };
     return nameMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
   };
@@ -71,6 +82,17 @@ export default function CompletePlanScreen() {
       'tempo': ProRunnerColors.warning,
       'long': ProRunnerColors.accent,
       'recovery': ProRunnerColors.success,
+      // Novos tipos com cores específicas
+      'fartlek': '#9C27B0', // Roxo para Fartlek (divertido)
+      'hill': '#FF5722', // Laranja para subidas (força)
+      'progressive': '#3F51B5', // Azul para progressivo
+      'ladder': '#795548', // Marrom para escada
+      'long_surges': '#607D8B', // Azul acinzentado para longão com surges
+      'progressive_long': '#009688', // Verde azulado para longão progressivo
+      // Compatibilidade com nomes antigos
+      'tiros': ProRunnerColors.error,
+      'longao': ProRunnerColors.accent,
+      'regenerativo': ProRunnerColors.success
     };
     return colorMap[type] || ProRunnerColors.textSecondary;
   };
@@ -169,6 +191,7 @@ export default function CompletePlanScreen() {
           headerTintColor: ProRunnerColors.textPrimary,
           headerTitleStyle: {
             fontWeight: '600',
+            fontSize: 18, // Diminui ligeiramente o tamanho da fonte
           },
           headerRight: () => (
             <TouchableOpacity 
@@ -361,32 +384,7 @@ export default function CompletePlanScreen() {
           </View>
         )}
 
-        {/* VDOT Training Paces */}
-        {plan.training_paces && (
-          <View style={styles.summaryCard}>
-            <Text style={styles.cardTitle}>🎯 Paces de Treino (VDOT)</Text>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Fácil (Easy):</Text>
-              <Text style={styles.summaryValue}>{plan.training_paces.easy}/km</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Longão (Long):</Text>
-              <Text style={styles.summaryValue}>{plan.training_paces.long}/km</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Tempo (Threshold):</Text>
-              <Text style={styles.summaryValue}>{plan.training_paces.tempo}/km</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Tiros (Interval):</Text>
-              <Text style={styles.summaryValue}>{plan.training_paces.interval}/km</Text>
-            </View>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Recuperação:</Text>
-              <Text style={styles.summaryValue}>{plan.training_paces.recovery}/km</Text>
-            </View>
-          </View>
-        )}
+
 
         {/* Validation Warning */}
         {plan.validation && plan.validation.warning && (

@@ -211,12 +211,34 @@ export const workoutTypes = {
     longao: 'Corrida Longa',
     tiros: 'Treino de Velocidade',
     tempo: 'Treino Tempo',
-    regenerativo: 'Corrida Regenerativa'
+    regenerativo: 'Corrida Regenerativa',
+    // Novos tipos baseados em metodologias científicas
+    easy: 'Corrida Leve',
+    interval: 'Treino Intervalado',
+    long: 'Corrida Longa',
+    recovery: 'Recuperação Ativa',
+    fartlek: 'Fartlek (Jogo de Velocidade)',
+    hill: 'Treino de Subidas',
+    progressive: 'Corrida Progressiva',
+    ladder: 'Treino em Escada',
+    long_surges: 'Longão com Surges',
+    progressive_long: 'Longão Progressivo'
   },
   en: {
     longao: 'Long Run',
     tiros: 'Speed Workout',
     tempo: 'Tempo Run',
-    regenerativo: 'Recovery Run'
+    regenerativo: 'Recovery Run',
+    // New types based on scientific methodologies
+    easy: 'Easy Run',
+    interval: 'Interval Training',
+    long: 'Long Run',
+    recovery: 'Recovery Run',
+    fartlek: 'Fartlek (Speed Play)',
+    hill: 'Hill Repeats',
+    progressive: 'Progressive Run',
+    ladder: 'Ladder Workout',
+    long_surges: 'Long Run with Surges',
+    progressive_long: 'Progressive Long Run'
   }
 } as const; 

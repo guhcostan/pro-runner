@@ -151,6 +151,51 @@ export default function WorkoutDetailScreen() {
           '⚡ 3-4 acelerações de 80m',
           '🏃‍♂️ 3 min corrida leve'
         ];
+      case 'fartlek':
+        return [
+          '🚶‍♂️ 5 min caminhada',
+          '🏃‍♂️ 10-15 min corrida leve',
+          '🦵 Mobilidade articular (3 min)',
+          '⚡ 3-4 acelerações progressivas',
+          '🎲 Comece devagar o fartlek'
+        ];
+      case 'hill':
+        return [
+          '🚶‍♂️ 5 min caminhada',
+          '🏃‍♂️ 15 min corrida leve',
+          '🦵 Alongamento dinâmico (5 min)',
+          '⚡ 4-5 acelerações em subida leve',
+          '💪 Ativação glúteos e core'
+        ];
+      case 'progressive':
+        return [
+          '🚶‍♂️ 3-5 min caminhada',
+          '🏃‍♂️ 8-10 min corrida leve',
+          '🦵 Mobilidade articular (3 min)',
+          '📈 Comece bem devagar'
+        ];
+      case 'ladder':
+        return [
+          '🚶‍♂️ 5 min caminhada',
+          '🏃‍♂️ 12-15 min corrida leve',
+          '🦵 Alongamento dinâmico (5 min)',
+          '⚡ 4-6 acelerações de 100m',
+          '🪜 Teste o pace dos intervalos'
+        ];
+      case 'long_surges':
+        return [
+          '🚶‍♂️ 3-5 min caminhada',
+          '🏃‍♂️ 10 min corrida bem leve',
+          '🦵 Mobilidade básica (2 min)',
+          '💨 Guarde energia para os surges'
+        ];
+      case 'progressive_long':
+        return [
+          '🚶‍♂️ 5 min caminhada',
+          '🏃‍♂️ 8-10 min corrida muito leve',
+          '🦵 Mobilidade articular (2 min)',
+          '📈 Comece mais devagar que o normal'
+        ];
       case 'long':
       case 'longao':
         return [

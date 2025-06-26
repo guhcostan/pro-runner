@@ -23,6 +23,84 @@ export const Colors = {
     tabIconDefault: '#9BA1A6',
     tabIconSelected: tintColorDark,
   },
+  
+  // Sistema Gamificado - Cores de XP e Níveis
+  xp: {
+    primary: '#22c55e',      // Verde principal para XP
+    secondary: '#16a34a',    // Verde escuro para barras
+    background: '#f0f9f4',   // Fundo claro
+    backgroundDark: '#052e16', // Fundo escuro
+  },
+  
+  // Fases de Treinamento
+  phases: {
+    foundation: {
+      primary: '#3b82f6',     // Azul - Base
+      secondary: '#1d4ed8',
+      background: '#eff6ff',
+      backgroundDark: '#1e3a8a',
+    },
+    development: {
+      primary: '#f59e0b',     // Laranja - Desenvolvimento  
+      secondary: '#d97706',
+      background: '#fffbeb',
+      backgroundDark: '#92400e',
+    },
+    performance: {
+      primary: '#ef4444',     // Vermelho - Performance
+      secondary: '#dc2626',
+      background: '#fef2f2',
+      backgroundDark: '#991b1b',
+    },
+    maintenance: {
+      primary: '#8b5cf6',     // Roxo - Manutenção
+      secondary: '#7c3aed',
+      background: '#f5f3ff',
+      backgroundDark: '#581c87',
+    },
+    recovery: {
+      primary: '#06b6d4',     // Ciano - Recuperação
+      secondary: '#0891b2',
+      background: '#ecfeff',
+      backgroundDark: '#164e63',
+    },
+  },
+  
+  // Status e Estados
+  status: {
+    success: '#22c55e',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    info: '#3b82f6',
+    neutral: '#6b7280',
+  },
+  
+  // Intensidades de Treino
+  intensity: {
+    easy: '#22c55e',        // Verde - Fácil
+    moderate: '#f59e0b',    // Laranja - Moderado
+    hard: '#ef4444',        // Vermelho - Difícil
+    recovery: '#06b6d4',    // Ciano - Recuperação
+  },
+  
+  // Gradientes para cards e elementos visuais
+  gradients: {
+    primary: ['#3b82f6', '#1d4ed8'],
+    success: ['#22c55e', '#16a34a'],
+    warning: ['#f59e0b', '#d97706'],
+    error: ['#ef4444', '#dc2626'],
+    xp: ['#22c55e', '#16a34a'],
+  },
+  
+  // Elementos de UI
+  ui: {
+    border: '#e5e7eb',
+    borderDark: '#374151',
+    card: '#ffffff',
+    cardDark: '#1f2937',
+    shadow: 'rgba(0, 0, 0, 0.1)',
+    shadowDark: 'rgba(0, 0, 0, 0.3)',
+  },
 };
 
 // ProRunner theme colors - Dark focused

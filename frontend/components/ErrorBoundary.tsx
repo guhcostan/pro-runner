@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { translations, getCurrentLanguage, Language } from '../constants/i18n';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from '../hooks/useColorScheme';
+import { Platform } from 'react-native';
 
 interface ErrorFallbackProps {
   error: Error;
@@ -288,8 +289,11 @@ export const setupGlobalErrorHandling = () => {
     );
   };
 
-  // Add global error listeners (for web)
-  if (typeof window !== 'undefined') {
+  // Check if we're in a web environment with proper window object
+  if (typeof window !== 'undefined' && 
+      typeof window.addEventListener === 'function' && 
+      typeof window.removeEventListener === 'function') {
+    
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
     window.addEventListener('error', handleError);
 
@@ -300,7 +304,14 @@ export const setupGlobalErrorHandling = () => {
     };
   }
 
-  return () => {}; // No-op for React Native
+  // For React Native, we can set up promise rejection tracking
+  if (Platform.OS !== 'web') {
+    // For React Native, we'll use a simpler approach
+    // The global error handler will be set up by the React Native runtime
+    console.log('Error boundary initialized for React Native');
+  }
+
+  return () => {}; // No-op cleanup for React Native
 };
 
 export default ErrorBoundary; 

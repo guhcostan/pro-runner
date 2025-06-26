@@ -1,508 +1,399 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
   StyleSheet,
   ScrollView,
-  Alert,
-  RefreshControl,
+  View,
+  Text,
   TouchableOpacity,
+  RefreshControl,
+  Alert,
 } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-import { ProRunnerColors } from '../../constants/Colors';
-import { useUserStore } from '../../store/userStore';
-import { apiService } from '../../services/api';
-import { getGoalDisplayName } from '../../lib/utils';
+import { useAuthStore } from '@/store/authStore';
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { translations, Language } from '@/constants/i18n';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { ProgressBar } from '@/components/ui/ProgressBar';
+import { XPProgressBar } from '@/components/progression/XPProgressBar';
+import { TrainingPhaseCard } from '@/components/progression/TrainingPhaseCard';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+
+// Tipos para o sistema adaptativo
+interface UserProgress {
+  id: string;
+  current_phase_id: number;
+  current_level: number;
+  current_xp: number;
+  xp_to_next_level: number;
+  total_xp_earned: number;
+  total_workouts_completed: number;
+  total_distance_run: number;
+  current_streak_days: number;
+  longest_streak_days: number;
+  achievements: Achievement[];
+  phase_started_at: string;
+  last_workout_at?: string;
+}
+
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earned_at: string;
+}
+
+interface TrainingPhase {
+  id: number;
+  name: string;
+  display_name: {
+    pt: string;
+    en: string;
+    es: string;
+  };
+  description: {
+    pt: string;
+    en: string;
+    es: string;
+  };
+}
+
+interface TodayWorkout {
+  id: string;
+  name: string;
+  type: string;
+  duration: number;
+  intensity: 'easy' | 'moderate' | 'hard';
+  xp_reward: number;
+}
 
 export default function HomeScreen() {
-  const router = useRouter();
-  const { 
-    user, 
-    plan, 
-    setPlan
-  } = useUserStore();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const { user } = useAuthStore();
   
+  // Por enquanto, vamos usar português por padrão
+  const language: Language = 'pt';
+  const t = translations[language];
+  
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
+  const [currentPhase, setCurrentPhase] = useState<TrainingPhase | null>(null);
+  const [todayWorkout, setTodayWorkout] = useState<TodayWorkout | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-
-  const loadPlan = useCallback(async () => {
-    if (!user) return;
-
+  const loadUserData = async () => {
     try {
-      const response = await apiService.getPlanByUserId(user.id);
-      setPlan(response.plan);
-    } catch (error) {
-      console.error('Error loading plan:', error);
-      Alert.alert(
-        'Erro',
-        'Não foi possível carregar seu plano de treino.',
-        [
+      // TODO: Implementar chamadas para a API adaptativa
+      // Simulando dados por enquanto
+      const mockProgress: UserProgress = {
+        id: '1',
+        current_phase_id: 1,
+        current_level: 3,
+        current_xp: 750,
+        xp_to_next_level: 1000,
+        total_xp_earned: 2750,
+        total_workouts_completed: 15,
+        total_distance_run: 87.5,
+        current_streak_days: 5,
+        longest_streak_days: 12,
+        achievements: [
           {
-            text: 'Tentar Novamente',
-            onPress: () => loadPlan(),
-          },
-        ]
-      );
-    }
-  }, [user, setPlan]);
+            id: '1',
+            name: 'Primeiro Treino',
+            description: 'Complete seu primeiro treino',
+            icon: '🏃‍♂️',
+            earned_at: '2025-01-10T10:00:00Z'
+          }
+        ],
+        phase_started_at: '2025-01-01T00:00:00Z',
+        last_workout_at: '2025-01-15T18:30:00Z'
+      };
 
-  useEffect(() => {
-    // Se não tem usuário ou não está autenticado, deixa o app/index.tsx lidar com isso
-    if (!user) {
-      return;
-    }
+      const mockPhase: TrainingPhase = {
+        id: 1,
+        name: 'foundation',
+        display_name: {
+          pt: 'Base',
+          en: 'Foundation',
+          es: 'Base'
+        },
+        description: {
+          pt: 'Construção da base aeróbica e adaptação inicial',
+          en: 'Building aerobic base and initial adaptation',
+          es: 'Construcción de base aeróbica y adaptación inicial'
+        }
+      };
 
-    if (!plan) {
-      loadPlan();
+      const mockWorkout: TodayWorkout = {
+        id: '1',
+        name: 'Corrida Fácil',
+        type: 'easy_run',
+        duration: 30,
+        intensity: 'easy',
+        xp_reward: 100
+      };
+
+      setUserProgress(mockProgress);
+      setCurrentPhase(mockPhase);
+      setTodayWorkout(mockWorkout);
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      Alert.alert('Erro', 'Não foi possível carregar seus dados');
+    } finally {
+      setIsLoading(false);
     }
-  }, [user, plan, loadPlan]);
+  };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadPlan();
+    await loadUserData();
     setRefreshing(false);
   };
 
-
-
-  // Get current week and today's workout from the plan
-  const getCurrentWorkout = () => {
-    if (!plan || !plan.weeks || plan.weeks.length === 0) {
-      return null;
+  const handleStartWorkout = () => {
+    if (todayWorkout) {
+      router.push('/workout-detail');
     }
-
-    // Find current week (first incomplete week)
-    const currentWeek = plan.weeks.find(week => 
-      week.workouts.some(workout => !workout.completed)
-    );
-
-    if (!currentWeek) {
-      return null;
-    }
-
-    // Find next uncompleted workout
-    const nextWorkout = currentWeek.workouts.find(workout => !workout.completed);
-    
-    if (!nextWorkout) {
-      return null;
-    }
-
-    return {
-      ...nextWorkout,
-      week: currentWeek.week,
-      emoji: getWorkoutEmoji(nextWorkout.type)
-    };
   };
 
-  const getWorkoutEmoji = (type: string) => {
-    const emojiMap: Record<string, string> = {
-      // Novos tipos baseados na metodologia profissional
-      'easy': '🟢',
-      'interval': '⚡',
-      'tempo': '🔥',
-      'long': '🏃‍♂️',
-      'recovery': '🌱',
-      'off': '😴',
-      // Tipos antigos (compatibilidade)
-      'regenerativo': '🌱',
-      'longao': '🏃‍♂️',
-      'tiros': '⚡',
-      'velocidade': '🚀',
-      'intervalado': '⏱️',
-      'fartlek': '🎯'
-    };
-    return emojiMap[type] || '🏃‍♂️';
+  const handleViewProgress = () => {
+    router.push('/(tabs)/progress');
   };
 
-  // Calculate pace for specific workout types
-  const calculateWorkoutPace = (type: string, basePace: string) => {
-    if (!basePace) return null;
-    
-    // Parse base pace (format: "5:30")
-    const [minutes, seconds] = basePace.split(':').map(Number);
-    const basePaceSeconds = minutes * 60 + seconds;
-    
-    let adjustment = 0;
-    let zone = '';
-    
-    switch (type) {
-      case 'regenerativo':
-        adjustment = 60; // +1 minute per km
-        zone = 'Zona 1-2 (Recuperação)';
-        break;
-      case 'tempo':
-        adjustment = -20; // -20 seconds per km
-        zone = 'Zona 3-4 (Tempo)';
-        break;
-      case 'tiros':
-      case 'velocidade':
-        adjustment = -60; // -1 minute per km
-        zone = 'Zona 4-5 (VO2 Max)';
-        break;
-      case 'longao':
-        adjustment = 30; // +30 seconds per km
-        zone = 'Zona 1-2 (Aeróbico)';
-        break;
-      case 'intervalado':
-        adjustment = -40; // -40 seconds per km
-        zone = 'Zona 4 (Limiar)';
-        break;
-      default:
-        adjustment = 0;
-        zone = 'Zona 2-3 (Base)';
-    }
-    
-    const targetPaceSeconds = basePaceSeconds + adjustment;
-    const targetMinutes = Math.floor(targetPaceSeconds / 60);
-    const targetSecondsRemainder = targetPaceSeconds % 60;
-    
-    return {
-      pace: `${targetMinutes}:${targetSecondsRemainder.toString().padStart(2, '0')}`,
-      zone
-    };
+  const handleViewPhase = () => {
+    router.push('/(tabs)/plan');
   };
 
-  const currentWorkout = getCurrentWorkout();
-  const workoutPaceInfo = currentWorkout && plan?.base_pace ? 
-    calculateWorkoutPace(currentWorkout.type, plan.base_pace) : null;
+  useEffect(() => {
+    loadUserData();
+  }, []);
 
-  // Funções auxiliares para a nova estrutura VDOT
-  const getWorkoutName = (type: string) => {
-    const nameMap: Record<string, string> = {
-      'easy': 'Corrida Leve',
-      'interval': 'Treino Intervalado', 
-      'tempo': 'Treino Tempo',
-      'long': 'Corrida Longa',
-      'recovery': 'Recuperação',
-      // Compatibilidade
-      'longao': 'Corrida Longa',
-      'tiros': 'Treino Intervalado',
-      'regenerativo': 'Recuperação',
-    };
-    return nameMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
-  };
-
-  const getWorkoutZone = (type: string) => {
-    const zoneMap: Record<string, string> = {
-      'easy': 'Zona Aeróbica',
-      'long': 'Zona Aeróbica', 
-      'interval': 'Zona VO2 Max',
-      'tempo': 'Zona Limiar',
-      'recovery': 'Zona Regenerativa',
-      // Compatibilidade
-      'longao': 'Zona Aeróbica',
-      'tiros': 'Zona VO2 Max',
-      'regenerativo': 'Zona Regenerativa',
-    };
-    return zoneMap[type] || 'Zona Base';
-  };
-
-  const getWorkoutIntensity = (type: string) => {
-    const intensityMap: Record<string, string> = {
-      'easy': 'Baixa',
-      'long': 'Baixa-Moderada',
-      'interval': 'Alta', 
-      'tempo': 'Moderada-Alta',
-      'recovery': 'Muito Baixa',
-      // Compatibilidade
-      'longao': 'Baixa-Moderada',
-      'tiros': 'Alta',
-      'regenerativo': 'Muito Baixa',
-    };
-    return intensityMap[type] || 'Moderada';
-  };
-
-  const calculateEstimatedDuration = (workout: any) => {
-    // Nova estrutura VDOT
-    if (workout.workoutDetails) {
-      if (workout.workoutDetails.duration) {
-        return workout.workoutDetails.duration;
-      }
-      
-      if (workout.workoutDetails.distance && workout.workoutDetails.pace) {
-        const distance = workout.workoutDetails.distance;
-        const paceString = workout.workoutDetails.pace;
-        const [minutes, seconds] = paceString.split(':').map(Number);
-        const paceInMinutes = minutes + (seconds / 60);
-        return Math.round(distance * paceInMinutes);
-      }
-      
-      if (workout.workoutDetails.intervals) {
-        const intervals = workout.workoutDetails.intervals;
-        const intervalDuration = workout.workoutDetails.intervalDuration;
-        const recoveryTime = workout.workoutDetails.recoveryTime || 2;
-        
-        const totalIntervalTime = intervals * intervalDuration;
-        const totalRecoveryTime = (intervals - 1) * recoveryTime;
-        return 15 + totalIntervalTime + totalRecoveryTime; // 15min = aquec + desaq
-      }
-    }
-    
-    // Fallback para estrutura antiga
-    const distance = workout.distance || 0;
-    return Math.round(distance * 6); // 6 min/km estimado
-  };
-
-  // Calculate progress based on current week
-  const getCurrentWeekProgress = () => {
-    if (!plan || !plan.weeks || plan.weeks.length === 0) {
-      return { completed: 0, total: 3, percentage: 0 };
-    }
-
-    const currentWeek = plan.weeks.find(week => 
-      week.workouts.some(workout => !workout.completed)
-    );
-
-    if (!currentWeek) {
-      return { completed: plan.weeks[0]?.workouts.length || 3, total: plan.weeks[0]?.workouts.length || 3, percentage: 100 };
-    }
-
-    const completedCount = currentWeek.workouts.filter(w => w.completed).length;
-    const totalCount = currentWeek.workouts.length;
-    
-    return {
-      completed: completedCount,
-      total: totalCount,
-      percentage: (completedCount / totalCount) * 100
-    };
-  };
-
-  const weekProgress = getCurrentWeekProgress();
-
-
-
-  if (!user) {
+  if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="light" />
+      <ThemedView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Carregando seu plano...</Text>
+          <Text style={{ color: isDark ? Colors.dark.text : Colors.light.text }}>
+            {t.loading}
+          </Text>
         </View>
-      </SafeAreaView>
+      </ThemedView>
     );
   }
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
+
+  const xpProgress = userProgress ? userProgress.current_xp / userProgress.xp_to_next_level : 0;
+
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
-      
+    <ThemedView style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={ProRunnerColors.primary}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        showsVerticalScrollIndicator={false}
       >
-        {/* Header with Hero Section */}
-        <View style={styles.heroSection}>
-          <View style={styles.headerContent}>
-            <Text style={styles.greeting}>Olá, {user.name}! 👋</Text>
-            <Text style={styles.planInfo}>
-              {plan ? `Plano: ${getGoalDisplayName(plan.goal)}` : 'Configurando seu plano...'}
-            </Text>
-          </View>
+        {/* Header com saudação */}
+        <View style={styles.header}>
+          <Text style={[styles.greeting, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+            {getGreeting()}
+          </Text>
+          <Text style={[styles.userName, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+            {user?.email?.split('@')[0] || 'Runner'}! 🏃‍♂️
+          </Text>
         </View>
 
-        {/* Current Workout - Now at the top */}
-        {currentWorkout && (
-          <View style={styles.nextWorkoutSection}>
-            <Text style={styles.sectionTitle}>Próximo Treino</Text>
-            
-            <View style={styles.workoutCard}>
-              <View style={styles.workoutHeader}>
-                <View style={styles.workoutIcon}>
-                  <Text style={styles.workoutEmoji}>{currentWorkout.emoji}</Text>
-                </View>
-                
-                <View style={styles.workoutMainInfo}>
-                  <Text style={styles.workoutTitle}>
-                    {getWorkoutName(currentWorkout.type)}
-                  </Text>
-                                      <Text style={styles.workoutDistance}>
-                     {currentWorkout.workoutDetails ? 
-                       (currentWorkout.workoutDetails.distance ? `${currentWorkout.workoutDetails.distance}km` :
-                        currentWorkout.workoutDetails.duration ? `${currentWorkout.workoutDetails.duration}min` :
-                        currentWorkout.workoutDetails.intervals ? `${currentWorkout.workoutDetails.intervals}x${currentWorkout.workoutDetails.intervalDuration}min` :
-                        'Treino') :
-                       'Treino'
-                     } • {currentWorkout.day}
-                  </Text>
-                </View>
+        {/* Card de Progresso XP */}
+        {userProgress && (
+          <Card variant="elevated" margin="small">
+            <View style={styles.xpHeader}>
+              <View>
+                <Text style={[styles.levelText, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                  Nível {userProgress.current_level}
+                </Text>
+                <Text style={[styles.xpText, { color: Colors.xp.primary }]}>
+                  {userProgress.current_xp} / {userProgress.xp_to_next_level} XP
+                </Text>
               </View>
-              
-              {/* Enhanced Workout Details */}
-              <View style={styles.workoutDetailsContainer}>
-                <View style={styles.workoutDetailRow}>
-                  <View style={styles.workoutDetail}>
-                    <Text style={styles.detailLabel}>Pace Alvo</Text>
-                    <Text style={styles.detailValue}>
-                      {currentWorkout.workoutDetails?.pace || workoutPaceInfo?.pace || '5:12'}/km
-                    </Text>
-                  </View>
-                  <View style={styles.workoutDetail}>
-                    <Text style={styles.detailLabel}>Zona</Text>
-                    <Text style={styles.detailZone}>
-                      {getWorkoutZone(currentWorkout.type)}
-                    </Text>
-                  </View>
-                </View>
-                
-                <View style={styles.workoutDetailRow}>
-                  <View style={styles.workoutDetail}>
-                    <Text style={styles.detailLabel}>Intensidade</Text>
-                    <Text style={styles.detailValue}>
-                      {getWorkoutIntensity(currentWorkout.type)}
-                    </Text>
-                  </View>
-                  <View style={styles.workoutDetail}>
-                    <Text style={styles.detailLabel}>Duração Est.</Text>
-                    <Text style={styles.detailValue}>
-                      ~{calculateEstimatedDuration(currentWorkout)} min
-                    </Text>
-                  </View>
-                </View>
-              </View>
-              
-              {/* Short Description */}
-              {(currentWorkout.workoutDetails?.description || currentWorkout.detailedDescription) && (
-                <View style={styles.workoutSummary}>
-                  <Text style={styles.summaryText} numberOfLines={2}>
-                    {currentWorkout.workoutDetails?.description || currentWorkout.detailedDescription}
-                  </Text>
-                </View>
-              )}
-
-              {/* Action Button */}
-              <TouchableOpacity 
-                style={styles.fullWidthDetailButton}
-                onPress={() => {
-                  router.push({
-                    pathname: '/workout-detail',
-                    params: {
-                      workout: JSON.stringify(currentWorkout),
-                      week: '1',
-                      dayName: currentWorkout.day
-                    }
-                  });
-                }}
-              >
-                <Text style={styles.startButtonText}>📋 Ver Detalhes do Treino</Text>
+              <TouchableOpacity onPress={handleViewProgress} style={styles.progressButton}>
+                <Ionicons 
+                  name="stats-chart" 
+                  size={24} 
+                  color={Colors.xp.primary} 
+                />
               </TouchableOpacity>
-
-              {/* Hint about workout details */}
-              <View style={styles.workoutDetailHint}>
-                <Text style={styles.workoutDetailHintText}>
-                  💡 No detalhe do treino você encontra aquecimentos sugeridos, estrutura completa e dicas específicas!
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        {/* No workout available */}
-        {!currentWorkout && (
-          <View style={styles.noWorkoutSection}>
-            <View style={styles.workoutIcon}>
-              <Text style={styles.workoutEmoji}>📅</Text>
-            </View>
-            <Text style={styles.noWorkoutTitle}>Plano em dia!</Text>
-            <Text style={styles.noWorkoutSubtitle}>
-              Consulte o &ldquo;Plano Completo&rdquo; para ver todos os seus treinos programados.
-            </Text>
-          </View>
-        )}
-
-        {/* Week Overview */}
-        <View style={styles.progressSection}>
-          <Text style={styles.sectionTitle}>Visão Geral da Semana</Text>
-          
-          <View style={styles.progressCard}>
-            <View style={styles.progressHeader}>
-              <Text style={styles.progressTitle}>
-                {weekProgress.total} treinos programados
-              </Text>
-                              <Text style={styles.progressPercentage}>
-                  Semana {(plan?.weeks?.findIndex(week => week.workouts.some(w => !w.completed)) ?? 0) + 1}
-                </Text>
             </View>
             
-            <View style={styles.progressStats}>
+            <XPProgressBar
+              currentXP={userProgress.current_xp}
+              xpToNextLevel={userProgress.xp_to_next_level}
+              currentLevel={userProgress.current_level}
+              totalXPEarned={userProgress.total_xp_earned}
+              style={styles.xpBar}
+            />
+
+            {/* Estatísticas rápidas */}
+            <View style={styles.quickStats}>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{weekProgress.total}</Text>
-                <Text style={styles.statLabel}>Treinos</Text>
+                <Text style={[styles.statNumber, { color: Colors.status.success }]}>
+                  {userProgress.current_streak_days}
+                </Text>
+                <Text style={[styles.statLabel, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                  Dias seguidos
+                </Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{plan?.weekly_frequency || 3}</Text>
-                <Text style={styles.statLabel}>x/semana</Text>
+                <Text style={[styles.statNumber, { color: Colors.status.info }]}>
+                  {userProgress.total_workouts_completed}
+                </Text>
+                <Text style={[styles.statLabel, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                  Treinos
+                </Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{plan?.total_weeks || 8}</Text>
-                <Text style={styles.statLabel}>semanas</Text>
+                <Text style={[styles.statNumber, { color: Colors.status.warning }]}>
+                  {userProgress.total_distance_run.toFixed(1)}km
+                </Text>
+                <Text style={[styles.statLabel, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                  Distância total
+                </Text>
               </View>
             </View>
-          </View>
-        </View>
+          </Card>
+        )}
 
-        {/* Quick Access */}
-        <View style={styles.quickAccessSection}>
-          <Text style={styles.sectionTitle}>Acesso Rápido</Text>
-          
-          <View style={styles.quickAccessGrid}>
-            <TouchableOpacity 
-              style={styles.quickAccessCard}
-              onPress={() => router.push('/(tabs)/today')}
-            >
-              <Ionicons name="calendar-outline" size={24} color={ProRunnerColors.primary} />
-              <Text style={styles.quickAccessText}>Hoje</Text>
-              <Text style={styles.quickAccessSubtext}>Treino e clima</Text>
+        {/* Fase Atual */}
+        {currentPhase && (
+          <Card variant="elevated" margin="small">
+            <TouchableOpacity onPress={handleViewPhase}>
+              <View style={styles.phaseHeader}>
+                <View>
+                  <Text style={[styles.phaseLabel, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                    Fase Atual
+                  </Text>
+                  <Text style={[styles.phaseName, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                    {currentPhase.display_name[language]}
+                  </Text>
+                </View>
+                <Badge 
+                  variant="phase" 
+                  phase={currentPhase.name as 'foundation' | 'development' | 'performance' | 'maintenance' | 'recovery'}
+                  size="large"
+                >
+                  Nível {userProgress?.current_level}
+                </Badge>
+              </View>
+              
+              <Text style={[styles.phaseDescription, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                {currentPhase.description[language]}
+              </Text>
+              
+              <View style={styles.phaseProgress}>
+                <ProgressBar
+                  progress={xpProgress}
+                  variant="phase"
+                  phase={currentPhase.name as 'foundation' | 'development' | 'performance' | 'maintenance' | 'recovery'}
+                  showLabel
+                  label="Progresso para próximo nível"
+                />
+              </View>
             </TouchableOpacity>
+          </Card>
+        )}
+
+        {/* Treino de Hoje */}
+        {todayWorkout && (
+          <Card variant="elevated" margin="small">
+            <View style={styles.workoutHeader}>
+              <Text style={[styles.workoutTitle, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                Treino de Hoje
+              </Text>
+              <Badge 
+                variant="info" 
+                size="small"
+              >
+                +{todayWorkout.xp_reward} XP
+              </Badge>
+            </View>
+
+            <View style={styles.workoutDetails}>
+              <Text style={[styles.workoutName, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                {todayWorkout.name}
+              </Text>
+              
+              <View style={styles.workoutMeta}>
+                <View style={styles.workoutMetaItem}>
+                  <Ionicons 
+                    name="time-outline" 
+                    size={16} 
+                    color={isDark ? Colors.dark.icon : Colors.light.icon} 
+                  />
+                  <Text style={[styles.workoutMetaText, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                    {todayWorkout.duration} min
+                  </Text>
+                </View>
+                
+                <Badge 
+                  variant={todayWorkout.intensity === 'easy' ? 'success' : 
+                          todayWorkout.intensity === 'moderate' ? 'warning' : 'error'}
+                  size="small"
+                >
+                  {todayWorkout.intensity === 'easy' ? 'Fácil' : 
+                   todayWorkout.intensity === 'moderate' ? 'Moderado' : 'Difícil'}
+                </Badge>
+              </View>
+            </View>
 
             <TouchableOpacity 
-              style={styles.quickAccessCard}
-              onPress={() => router.push('/complete-plan')}
+              style={[styles.startButton, { backgroundColor: Colors.xp.primary }]}
+              onPress={handleStartWorkout}
             >
-              <Ionicons name="list-outline" size={24} color={ProRunnerColors.primary} />
-              <Text style={styles.quickAccessText}>Plano</Text>
-              <Text style={styles.quickAccessSubtext}>Visão completa</Text>
+              <Ionicons name="play" size={20} color="#ffffff" />
+              <Text style={styles.startButtonText}>
+                Iniciar Treino
+              </Text>
             </TouchableOpacity>
+          </Card>
+        )}
 
-            <TouchableOpacity 
-              style={styles.quickAccessCard}
-              onPress={() => router.push('/(tabs)/insights')}
-            >
-              <Ionicons name="analytics-outline" size={24} color={ProRunnerColors.primary} />
-              <Text style={styles.quickAccessText}>Insights</Text>
-              <Text style={styles.quickAccessSubtext}>Analytics</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.quickAccessCard}
-              onPress={() => router.push('/progress')}
-            >
-              <Ionicons name="trending-up-outline" size={24} color={ProRunnerColors.primary} />
-              <Text style={styles.quickAccessText}>Progresso</Text>
-              <Text style={styles.quickAccessSubtext}>Evolução</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.spacer} />
+        {/* Conquistas Recentes */}
+        {userProgress?.achievements && userProgress.achievements.length > 0 && (
+          <Card variant="elevated" margin="small">
+            <Text style={[styles.achievementsTitle, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+              Conquistas Recentes
+            </Text>
+            
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {userProgress.achievements.slice(0, 5).map((achievement) => (
+                <View key={achievement.id} style={styles.achievementItem}>
+                  <Text style={styles.achievementIcon}>{achievement.icon}</Text>
+                  <Text style={[styles.achievementName, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+                    {achievement.name}
+                  </Text>
+                </View>
+              ))}
+            </ScrollView>
+          </Card>
+        )}
       </ScrollView>
-    </SafeAreaView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: ProRunnerColors.background,
   },
   scrollView: {
     flex: 1,
@@ -512,454 +403,144 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loadingText: {
-    color: ProRunnerColors.textSecondary,
-    fontSize: 16,
-  },
-  heroSection: {
-    backgroundColor: ProRunnerColors.surface,
-    margin: 16,
-    borderRadius: 20,
-    padding: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerContent: {
-    flex: 1,
+  header: {
+    padding: 20,
+    paddingBottom: 10,
   },
   greeting: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: ProRunnerColors.textPrimary,
-    marginBottom: 4,
-  },
-  planInfo: {
     fontSize: 16,
-    color: ProRunnerColors.textSecondary,
-    textTransform: 'capitalize',
+    opacity: 0.7,
   },
-  heroImage: {
-    alignItems: 'center',
-    marginLeft: 16,
-  },
-  heroEmoji: {
-    fontSize: 48,
-    marginBottom: 8,
-  },
-  heroText: {
-    fontSize: 12,
-    color: ProRunnerColors.textMuted,
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  frequencySection: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: ProRunnerColors.textPrimary,
-    marginBottom: 16,
-  },
-  frequencyGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  frequencyCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: ProRunnerColors.surface,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  frequencyCardActive: {
-    backgroundColor: ProRunnerColors.primary + '20',
-    borderColor: ProRunnerColors.primary,
-  },
-  frequencyEmoji: {
+  userName: {
     fontSize: 24,
-    marginBottom: 8,
+    fontWeight: 'bold',
+    marginTop: 4,
   },
-  frequencyLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: ProRunnerColors.textSecondary,
-    textAlign: 'center',
-  },
-  frequencyLabelActive: {
-    color: ProRunnerColors.primary,
-  },
-  progressSection: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-  },
-  progressCard: {
-    backgroundColor: ProRunnerColors.surface,
-    padding: 20,
-    borderRadius: 16,
-  },
-  progressHeader: {
+  xpHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
   },
-  progressTitle: {
+  levelText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: ProRunnerColors.textPrimary,
-  },
-  progressPercentage: {
-    fontSize: 24,
     fontWeight: 'bold',
-    color: ProRunnerColors.primary,
   },
-  progressBarContainer: {
-    height: 8,
-    backgroundColor: ProRunnerColors.border,
-    borderRadius: 4,
-    marginBottom: 20,
+  xpText: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 2,
   },
-  progressBar: {
-    height: '100%',
-    backgroundColor: ProRunnerColors.primary,
-    borderRadius: 4,
+  progressButton: {
+    padding: 8,
   },
-  progressStats: {
+  xpBar: {
+    marginBottom: 16,
+  },
+  quickStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: Colors.ui.border,
   },
   statItem: {
     alignItems: 'center',
   },
-  statValue: {
-    fontSize: 24,
+  statNumber: {
+    fontSize: 20,
     fontWeight: 'bold',
-    color: ProRunnerColors.textPrimary,
   },
   statLabel: {
     fontSize: 12,
-    color: ProRunnerColors.textSecondary,
-    textTransform: 'uppercase',
+    marginTop: 4,
+    opacity: 0.7,
   },
-  nextWorkoutSection: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-  },
-  workoutCard: {
-    backgroundColor: ProRunnerColors.surface,
-    padding: 24,
-    borderRadius: 16,
-    alignItems: 'center',
-  },
-  workoutIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: ProRunnerColors.primary + '20',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  workoutEmoji: {
-    fontSize: 32,
-  },
-  workoutTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: ProRunnerColors.textPrimary,
-    marginBottom: 4,
-    textTransform: 'capitalize',
-  },
-  workoutDistance: {
-    fontSize: 16,
-    color: ProRunnerColors.textSecondary,
-    marginBottom: 20,
-  },
-  workoutDetailsContainer: {
-    width: '100%',
-    marginBottom: 16,
-  },
-  workoutDetail: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: ProRunnerColors.background,
-    borderRadius: 8,
-    marginHorizontal: 2,
-  },
-  detailLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: ProRunnerColors.textSecondary,
-    marginBottom: 2,
-  },
-  detailValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: ProRunnerColors.textPrimary,
-  },
-  detailZone: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: ProRunnerColors.primary,
-  },
-  workoutDescription: {
-    width: '100%',
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: ProRunnerColors.background,
-    borderRadius: 8,
-  },
-  descriptionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: ProRunnerColors.textSecondary,
-    marginBottom: 4,
-  },
-  descriptionText: {
-    fontSize: 14,
-    color: ProRunnerColors.textPrimary,
-    lineHeight: 20,
-  },
-  startButton: {
-    flex: 1,
-    backgroundColor: ProRunnerColors.primary,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  completedSection: {
-    paddingHorizontal: 24,
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  completedTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: ProRunnerColors.primary,
-    marginBottom: 8,
-  },
-  completedSubtitle: {
-    fontSize: 16,
-    color: ProRunnerColors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  resetButton: {
-    width: '100%',
-    backgroundColor: ProRunnerColors.surface,
-  },
-  spacer: {
-    height: 100,
-  },
-  motivationCard: {
-    backgroundColor: `${ProRunnerColors.primary}15`,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: `${ProRunnerColors.primary}30`,
-  },
-  motivationTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: ProRunnerColors.primary,
-    marginBottom: 8,
-  },
-  motivationalText: {
-    fontSize: 16,
-    color: ProRunnerColors.textPrimary,
-    lineHeight: 24,
-    fontStyle: 'italic',
-  },
-  weatherCard: {
-    backgroundColor: ProRunnerColors.surface,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: ProRunnerColors.border,
-  },
-  weatherHeader: {
+  phaseHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 12,
   },
-  weatherTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: ProRunnerColors.textPrimary,
-  },
-  weatherLocation: {
+  phaseLabel: {
     fontSize: 14,
-    color: ProRunnerColors.textSecondary,
+    opacity: 0.7,
   },
-  weatherContent: {
-    alignItems: 'center',
-  },
-  weatherTemp: {
-    fontSize: 32,
+  phaseName: {
+    fontSize: 20,
     fontWeight: 'bold',
-    color: ProRunnerColors.primary,
-    marginBottom: 4,
+    marginTop: 2,
   },
-  weatherDesc: {
-    fontSize: 16,
-    color: ProRunnerColors.textSecondary,
-    marginBottom: 8,
-  },
-  weatherTip: {
+  phaseDescription: {
     fontSize: 14,
-    color: ProRunnerColors.success,
-    fontWeight: '500',
+    lineHeight: 20,
+    marginBottom: 16,
+    opacity: 0.8,
   },
-  speedWorkoutHint: {
-    backgroundColor: ProRunnerColors.accent + '20',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: ProRunnerColors.accent,
-  },
-  speedHintText: {
-    fontSize: 12,
-    color: ProRunnerColors.textSecondary,
-    fontStyle: 'italic',
-  },
-  workoutDetailHint: {
-    backgroundColor: ProRunnerColors.primary + '20',
-    borderRadius: 8,
-    padding: 12,
+  phaseProgress: {
     marginTop: 8,
-    borderLeftWidth: 3,
-    borderLeftColor: ProRunnerColors.primary,
   },
-  workoutDetailHintText: {
-    fontSize: 12,
-    color: ProRunnerColors.textSecondary,
-    fontStyle: 'italic',
-    lineHeight: 16,
-  },
-  // New styles for enhanced workout display
   workoutHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    width: '100%',
+    marginBottom: 16,
+  },
+  workoutTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  workoutDetails: {
     marginBottom: 20,
   },
-  workoutMainInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  workoutDetailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  workoutName: {
+    fontSize: 16,
+    fontWeight: '600',
     marginBottom: 8,
   },
-  workoutSummary: {
-    width: '100%',
-    marginBottom: 16,
-    padding: 12,
-    backgroundColor: ProRunnerColors.background,
-    borderRadius: 8,
-  },
-  summaryText: {
-    fontSize: 14,
-    color: ProRunnerColors.textPrimary,
-    lineHeight: 20,
-  },
-  workoutActions: {
+  workoutMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: 16,
-    gap: 12,
-  },
-  detailButton: {
-    flex: 1,
-    backgroundColor: ProRunnerColors.surface,
-    paddingVertical: 12,
-    borderRadius: 8,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: ProRunnerColors.border,
   },
-  detailButtonText: {
+  workoutMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  workoutMetaText: {
+    marginLeft: 4,
     fontSize: 14,
-    fontWeight: '600',
-    color: ProRunnerColors.textPrimary,
+  },
+  startButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
   },
   startButtonText: {
-    fontSize: 14,
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: '600',
-    color: ProRunnerColors.background,
+    marginLeft: 8,
   },
-  fullWidthDetailButton: {
-    width: '100%',
-    backgroundColor: ProRunnerColors.primary,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
+  achievementsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 16,
   },
-  noWorkoutSection: {
-    paddingHorizontal: 24,
+  achievementItem: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginRight: 16,
+    width: 80,
   },
-  noWorkoutTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: ProRunnerColors.textPrimary,
+  achievementIcon: {
+    fontSize: 32,
     marginBottom: 8,
   },
-  noWorkoutSubtitle: {
-    fontSize: 16,
-    color: ProRunnerColors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  quickAccessSection: {
-    paddingHorizontal: 24,
-    marginBottom: 32,
-  },
-  quickAccessGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  quickAccessCard: {
-    backgroundColor: ProRunnerColors.surface,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    flex: 1,
-    minWidth: '47%',
-    borderWidth: 1,
-    borderColor: ProRunnerColors.border,
-  },
-  quickAccessText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: ProRunnerColors.textPrimary,
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  quickAccessSubtext: {
+  achievementName: {
     fontSize: 12,
-    color: ProRunnerColors.textSecondary,
-    marginTop: 2,
     textAlign: 'center',
+    lineHeight: 16,
   },
 });

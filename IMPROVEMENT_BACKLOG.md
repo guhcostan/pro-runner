@@ -40,7 +40,11 @@ Este documento contém uma lista organizada de melhorias para o ProRunner, divid
   - Logging estruturado (Winston/Pino)
   - Monitoramento de erros (Sentry)
   - Estimativa: 8-10h
-  - **Status**: Concluído - Sistema completo de tratamento de erros implementado: logging estruturado com Winston (rotação diária de logs), middleware robusto com classes de erro customizadas, Error Boundaries no frontend com fallback UI, tratamento multi-idioma, logging de segurança, 26 testes abrangentes (100% dos testes de error handler passando)
+  - **Status**: Concluído - Sistema completo de tratamento de erros implementado:
+    - **Backend**: Logging estruturado com Winston (rotação diária), middleware com 7 classes de erro customizadas, suporte multi-idioma (PT/EN/ES), mapeamento de erros Supabase/PostgreSQL, logging de segurança, tratamento JWT/Joi
+    - **Frontend**: Error Boundary com react-error-boundary, ErrorLogger singleton, fallback UI amigável, tratamento global de erros não capturados, diferenciação dev/prod
+    - **Testes**: 26 testes abrangentes (100% de cobertura do error handler)
+    - **Validação**: 199/199 testes passando, lint limpo, typecheck OK
 
 ### 📱 UX Core
 - [ ] **UX-001: Implementar estado de loading e skeleton screens**

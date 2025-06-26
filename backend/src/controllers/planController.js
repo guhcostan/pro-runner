@@ -1,5 +1,6 @@
 const { supabase } = require('../config/supabase.js');
 const { generateTrainingPlan } = require('../services/planService.js');
+const cacheService = require('../services/cacheService.js');
 
 /**
  * Gera e salva um plano de treino para o usuário
@@ -92,6 +93,10 @@ async function createPlan(req, res) {
       });
     }
 
+    // Invalidate cache for user plans when a new plan is created
+    cacheService.delete(`plan:user:${userId}`);
+    cacheService.deletePattern(`plan:${savedPlan.id}:*`);
+
     res.status(201).json({
       message: force ? 'Plano de treino recriado com sucesso' : 'Plano de treino criado com sucesso',
       plan: {
@@ -137,47 +142,74 @@ async function getPlanByUserId(req, res) {
       });
     }
 
-    // Busca o plano de treino
-    const { data: plans, error: planError } = await supabase
+    const cacheKey = `plan:user:${userId}`;
+    
+    // Try to get from cache first
+    const cachedPlan = cacheService.get(cacheKey);
+    if (cachedPlan) {
+      console.log(`Cache hit for user plan ${userId}`);
+      return res.json({
+        plan: cachedPlan,
+        cached: true
+      });
+    }
+
+    console.log(`Cache miss for user plan ${userId}, fetching from database`);
+
+    // Otimized query: JOIN plan with user data in single request (eliminates N+1)
+    const { data: planWithUser, error: planError } = await supabase
       .from('training_plans')
-      .select('*')
-      .eq('user_id', userId);
+      .select(`
+        id,
+        user_id,
+        goal,
+        fitness_level,
+        base_pace,
+        total_weeks,
+        weekly_frequency,
+        plan_data,
+        created_at,
+        users!inner (
+          name,
+          goal
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
 
     if (planError) {
+      if (planError.code === 'PGRST116') {
+        return res.status(404).json({
+          error: 'Nenhum plano encontrado para este usuário'
+        });
+      }
       console.error('Database error:', planError);
       return res.status(500).json({
         error: 'Erro ao buscar plano de treino'
       });
     }
 
-    if (!plans || plans.length === 0) {
-      return res.status(404).json({
-        error: 'Nenhum plano encontrado para este usuário'
-      });
-    }
+    // Format response with joined user data
+    const formattedPlan = {
+      id: planWithUser.id,
+      user_id: planWithUser.user_id,
+      user_name: planWithUser.users?.name,
+      goal: planWithUser.goal,
+      fitness_level: planWithUser.fitness_level,
+      base_pace: planWithUser.base_pace,
+      total_weeks: planWithUser.total_weeks,
+      weekly_frequency: planWithUser.weekly_frequency || 3,
+      weeks: planWithUser.plan_data,
+      created_at: planWithUser.created_at
+    };
 
-    // Busca dados do usuário para retornar junto
-    const { data: user } = await supabase
-      .from('users')
-      .select('name, goal')
-      .eq('id', userId)
-      .single();
-
-    const formattedPlans = plans.map(plan => ({
-        id: plan.id,
-        user_id: plan.user_id,
-        user_name: user?.name,
-        goal: plan.goal,
-        fitness_level: plan.fitness_level,
-        base_pace: plan.base_pace,
-        total_weeks: plan.total_weeks,
-      weekly_frequency: plan.weekly_frequency || 3,
-        weeks: plan.plan_data,
-        created_at: plan.created_at
-    }));
+    // Cache the plan data for 15 minutes (plans change less frequently than user data)
+    cacheService.set(cacheKey, formattedPlan, 900);
 
     res.json({
-      plan: formattedPlans[0] // Retorna apenas o primeiro plano, como esperado pelo frontend
+      plan: formattedPlan
     });
 
   } catch (error) {
@@ -234,16 +266,24 @@ async function updateWorkoutProgress(req, res) {
     weekData.workouts[workoutIndex].completed_at = completed ? new Date().toISOString() : null;
 
     // Salva as alterações
-    const { error: updateError } = await supabase
+    const { data: updatedPlan, error: updateError } = await supabase
       .from('training_plans')
       .update({ plan_data: updatedPlanData })
-      .eq('id', planId);
+      .eq('id', planId)
+      .select('user_id')
+      .single();
 
     if (updateError) {
       console.error('Database error:', updateError);
       return res.status(500).json({
         error: 'Erro ao atualizar progresso'
       });
+    }
+
+    // Invalidate cache for the user's plan when progress is updated
+    if (updatedPlan) {
+      cacheService.delete(`plan:user:${updatedPlan.user_id}`);
+      cacheService.deletePattern(`plan:${planId}:*`);
     }
 
     res.json({
@@ -259,8 +299,234 @@ async function updateWorkoutProgress(req, res) {
   }
 } 
 
+/**
+ * Lista planos com paginação e filtros (Admin/Analytics)
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+async function getPlansPaginated(req, res) {
+  try {
+    const { 
+      page = 1, 
+      limit = 20, 
+      goal = null, 
+      fitness_level = null,
+      sortBy = 'created_at',
+      sortOrder = 'desc'
+    } = req.query;
+
+    // Validate pagination params
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit))); // Max 50 per page
+    const offset = (pageNum - 1) * limitNum;
+
+    // Build cache key
+    const cacheKey = `plans:paginated:${pageNum}:${limitNum}:${goal}:${fitness_level}:${sortBy}:${sortOrder}`;
+    
+    // Try cache first
+    const cachedResult = cacheService.get(cacheKey);
+    if (cachedResult) {
+      console.log(`Cache hit for paginated plans page ${pageNum}`);
+      return res.json({
+        ...cachedResult,
+        cached: true
+      });
+    }
+
+    console.log(`Cache miss for paginated plans page ${pageNum}, fetching from database`);
+
+    // Optimized query with JOIN to get user info
+    let query = supabase
+      .from('training_plans')
+      .select(`
+        id,
+        user_id,
+        goal,
+        fitness_level,
+        base_pace,
+        total_weeks,
+        weekly_frequency,
+        created_at,
+        users!inner (
+          name
+        )
+      `, { count: 'exact' });
+
+    // Apply filters (uses indexes)
+    if (goal) {
+      query = query.eq('goal', goal);
+    }
+
+    if (fitness_level) {
+      query = query.eq('fitness_level', fitness_level);
+    }
+
+    // Apply sorting (using indexes)
+    const validSortFields = ['created_at', 'goal', 'fitness_level'];
+    const sortField = validSortFields.includes(sortBy) ? sortBy : 'created_at';
+    const order = sortOrder.toLowerCase() === 'asc' ? { ascending: true } : { ascending: false };
+    
+    query = query.order(sortField, order);
+
+    // Apply pagination
+    query = query.range(offset, offset + limitNum - 1);
+
+    const { data: plans, count, error } = await query;
+
+    if (error) {
+      console.error('Database error:', error);
+      return res.status(500).json({
+        error: 'Erro ao buscar planos de treino'
+      });
+    }
+
+    const totalPages = Math.ceil(count / limitNum);
+    const hasNext = pageNum < totalPages;
+    const hasPrev = pageNum > 1;
+
+    const result = {
+      data: plans || [],
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        total: count,
+        totalPages,
+        hasNext,
+        hasPrev,
+        nextPage: hasNext ? pageNum + 1 : null,
+        prevPage: hasPrev ? pageNum - 1 : null
+      },
+      filters: {
+        goal,
+        fitness_level,
+        sortBy: sortField,
+        sortOrder
+      }
+    };
+
+    // Cache for 10 minutes (plans change less frequently)
+    cacheService.set(cacheKey, result, 600);
+
+    res.json(result);
+
+  } catch (error) {
+    console.error('Error fetching paginated plans:', error);
+    res.status(500).json({
+      error: 'Erro interno do servidor'
+    });
+  }
+}
+
+/**
+ * Analytics de planos de treino
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+async function getPlanAnalytics(req, res) {
+  try {
+    const cacheKey = 'plans:analytics';
+    
+    // Try cache first
+    const cachedAnalytics = cacheService.get(cacheKey);
+    if (cachedAnalytics) {
+      console.log('Cache hit for plan analytics');
+      return res.json({
+        ...cachedAnalytics,
+        cached: true
+      });
+    }
+
+    console.log('Cache miss for plan analytics, fetching from database');
+
+    // Optimized analytics queries using indexes
+    const [
+      totalPlansResult,
+      goalDistributionResult,
+      fitnessLevelDistributionResult,
+      recentPlansResult,
+      weeklyFreqDistributionResult
+    ] = await Promise.all([
+      // Total plans count
+      supabase
+        .from('training_plans')
+        .select('*', { count: 'exact', head: true }),
+      
+      // Plans by goal (uses idx_training_plans_goal)
+      supabase
+        .from('training_plans')
+        .select('goal', { count: 'exact' })
+        .not('goal', 'is', null),
+      
+      // Plans by fitness level (uses idx_training_plans_fitness_level)
+      supabase
+        .from('training_plans')
+        .select('fitness_level', { count: 'exact' })
+        .not('fitness_level', 'is', null),
+      
+      // Recent plans (last 7 days) (uses idx_training_plans_created_at)
+      supabase
+        .from('training_plans')
+        .select('id', { count: 'exact', head: true })
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+      
+      // Weekly frequency distribution
+      supabase
+        .from('training_plans')
+        .select('weekly_frequency', { count: 'exact' })
+        .not('weekly_frequency', 'is', null)
+    ]);
+
+    // Process goal distribution
+    const goalCounts = {};
+    if (goalDistributionResult.data) {
+      goalDistributionResult.data.forEach(plan => {
+        goalCounts[plan.goal] = (goalCounts[plan.goal] || 0) + 1;
+      });
+    }
+
+    // Process fitness level distribution
+    const fitnessLevelCounts = {};
+    if (fitnessLevelDistributionResult.data) {
+      fitnessLevelDistributionResult.data.forEach(plan => {
+        fitnessLevelCounts[plan.fitness_level] = (fitnessLevelCounts[plan.fitness_level] || 0) + 1;
+      });
+    }
+
+    // Process weekly frequency distribution
+    const weeklyFreqCounts = {};
+    if (weeklyFreqDistributionResult.data) {
+      weeklyFreqDistributionResult.data.forEach(plan => {
+        const freq = plan.weekly_frequency || 3;
+        weeklyFreqCounts[freq] = (weeklyFreqCounts[freq] || 0) + 1;
+      });
+    }
+
+    const analytics = {
+      total_plans: totalPlansResult.count || 0,
+      recent_plans_7d: recentPlansResult.count || 0,
+      goal_distribution: goalCounts,
+      fitness_level_distribution: fitnessLevelCounts,
+      weekly_frequency_distribution: weeklyFreqCounts,
+      generated_at: new Date().toISOString()
+    };
+
+    // Cache for 30 minutes (analytics don't need real-time updates)
+    cacheService.set(cacheKey, analytics, 1800);
+
+    res.json(analytics);
+
+  } catch (error) {
+    console.error('Error fetching plan analytics:', error);
+    res.status(500).json({
+      error: 'Erro interno do servidor'
+    });
+  }
+}
+
 module.exports = {
   createPlan,
   getPlanByUserId,
-  updateWorkoutProgress
+  updateWorkoutProgress,
+  getPlansPaginated,
+  getPlanAnalytics
 }; 

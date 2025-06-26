@@ -1,4 +1,4 @@
-export type Language = 'pt' | 'en';
+export type Language = 'pt' | 'en' | 'es';
 
 export const translations = {
   pt: {
@@ -73,10 +73,40 @@ export const translations = {
     try_again: 'Tentar Novamente',
     error_location: 'Erro ao obter localização',
     error_weather: 'Erro ao obter dados do clima',
+    unexpected_error: 'Erro Inesperado',
+    error_description: 'Algo deu errado. Nossa equipe foi notificada e está trabalhando para resolver o problema.',
+    go_home: 'Ir para Início',
+    report_error: 'Reportar Erro',
     
     // New keys
     inspiration_of_day: 'Inspiração do Dia',
     motivational_fallback: '🌟 Você é mais forte do que suas desculpas.',
+    
+    // Auth
+    welcome_back: 'Bem-vindo de volta! 🏃‍♂️',
+    login_subtitle: 'Faça login para continuar sua jornada',
+    email: 'Email',
+    password: 'Senha',
+    login: 'Entrar',
+    forgot_password: 'Esqueci minha senha',
+    no_account: 'Não tem uma conta?',
+    create_account: ' Criar conta',
+    start_journey: 'Começar sua jornada! 🚀',
+    signup_subtitle: 'Crie sua conta e comece a treinar imediatamente',
+    confirm_password: 'Confirmar Senha',
+    signup: 'Criar Conta',
+    have_account: 'Já tem uma conta?',
+    login_link: ' Fazer login',
+    forgot_password_title: 'Esqueceu a senha? 🔐',
+    forgot_password_subtitle: 'Não se preocupe! Digite seu email e enviaremos um link para redefinir sua senha.',
+    send_reset_link: 'Enviar Link de Recuperação',
+    remembered_password: 'Lembrou da senha?',
+    email_sent: 'Email Enviado! 📧',
+    reset_email_message: 'Enviamos um link para redefinir sua senha para',
+    check_email_instruction: 'Verifique sua caixa de entrada e siga as instruções no email para criar uma nova senha.',
+    back_to_login: 'Voltar ao Login',
+    resend_email: 'Não recebeu o email?',
+    resend: 'Reenviar',
   },
   
   en: {
@@ -151,10 +181,144 @@ export const translations = {
     try_again: 'Try Again',
     error_location: 'Error getting location',
     error_weather: 'Error getting weather data',
+    unexpected_error: 'Unexpected Error',
+    error_description: 'Something went wrong. Our team has been notified and is working to resolve the issue.',
+    go_home: 'Go Home',
+    report_error: 'Report Error',
     
     // New keys
     inspiration_of_day: 'Inspiration of the Day',
     motivational_fallback: '🌟 You are stronger than your excuses.',
+    
+    // Auth
+    welcome_back: 'Welcome back! 🏃‍♂️',
+    login_subtitle: 'Sign in to continue your journey',
+    email: 'Email',
+    password: 'Password',
+    login: 'Sign In',
+    forgot_password: 'Forgot password',
+    no_account: "Don't have an account?",
+    create_account: ' Create account',
+    start_journey: 'Start your journey! 🚀',
+    signup_subtitle: 'Create your account and start training immediately',
+    confirm_password: 'Confirm Password',
+    signup: 'Create Account',
+    have_account: 'Already have an account?',
+    login_link: ' Sign in',
+    forgot_password_title: 'Forgot password? 🔐',
+    forgot_password_subtitle: "Don't worry! Enter your email and we'll send you a link to reset your password.",
+    send_reset_link: 'Send Recovery Link',
+    remembered_password: 'Remembered your password?',
+    email_sent: 'Email Sent! 📧',
+    reset_email_message: 'We sent a password reset link to',
+    check_email_instruction: 'Check your inbox and follow the instructions in the email to create a new password.',
+    back_to_login: 'Back to Login',
+    resend_email: "Didn't receive the email?",
+    resend: 'Resend',
+  },
+  
+  es: {
+    // Common
+    cancel: 'Cancelar',
+    save: 'Guardar',
+    loading: 'Cargando...',
+    error: 'Error',
+    success: 'Éxito',
+    yes: 'Sí',
+    no: 'No',
+    
+    // Home Screen
+    greeting: '¡Hola, {{name}}! 👋',
+    plan: 'Plan: {{goal}}',
+    configuring_plan: 'Configurando tu plan...',
+    loading_plan: 'Cargando tu plan...',
+    
+    // Weather
+    weather_today: '🌤️ Clima de Hoy',
+    perfect_for_running: '🏃‍♂️ ¡Perfecto para correr!',
+    hot_day: '🌡️ Día caluroso, ¡hidrátate!',
+    cold_day: '🧥 Día frío, ¡calienta bien!',
+    rainy_day: '🌧️ Lluvia, ¡considera entrenamiento interior!',
+    
+    // Workouts
+    next_workout: 'Próximo Entrenamiento',
+    start_workout: 'Iniciar Entrenamiento',
+    week_summary: 'Resumen de la Semana',
+    workouts_completed: '{{completed}} de {{total}} entrenamientos',
+    congratulations: '¡Felicitaciones! 🎉',
+    workout_registered: '¡Entrenamiento registrado con éxito!',
+    
+    // Workout Types
+    regenerativo: 'Regenerativo',
+    tempo: 'Tempo',
+    longao: 'Carrera Larga',
+    tiros: 'Intervalos',
+    
+    // Onboarding
+    welcome: '¡Bienvenido!',
+    name_placeholder: 'Ingresa tu nombre',
+    age_placeholder: 'Edad',
+    weight_placeholder: 'Peso (kg)',
+    height_placeholder: 'Altura (cm)',
+    next: 'Siguiente',
+    back: 'Atrás',
+    finish: 'Finalizar',
+    
+    // Goals
+    goal_selection: '¿Cuál es tu objetivo?',
+    start_running: 'Empezar a correr',
+    run_5k: 'Correr 5km',
+    run_10k: 'Correr 10km',
+    half_marathon: 'Media maratón',
+    marathon: 'Maratón',
+    improve_time: 'Mejorar tiempo',
+    perder_peso: 'Perder peso',
+    
+    // Frequency
+    training_frequency: 'Frecuencia de entrenamiento',
+    times_per_week: '{{times}}x por semana',
+    
+    // Tabs
+    today: 'Hoy',
+    plan_tab: 'Plan',
+    progress: 'Progreso',
+    profile: 'Perfil',
+    
+    // Errors
+    error_loading_plan: 'No se pudo cargar tu plan de entrenamiento.',
+    try_again: 'Intentar de Nuevo',
+    error_location: 'Error al obtener ubicación',
+    error_weather: 'Error al obtener datos del clima',
+    
+    // New keys
+    inspiration_of_day: 'Inspiración del Día',
+    motivational_fallback: '🌟 Eres más fuerte que tus excusas.',
+    
+    // Auth
+    welcome_back: '¡Bienvenido de vuelta! 🏃‍♂️',
+    login_subtitle: 'Inicia sesión para continuar tu viaje',
+    email: 'Email',
+    password: 'Contraseña',
+    login: 'Iniciar Sesión',
+    forgot_password: 'Olvidé mi contraseña',
+    no_account: '¿No tienes una cuenta?',
+    create_account: ' Crear cuenta',
+    start_journey: '¡Comienza tu viaje! 🚀',
+    signup_subtitle: 'Crea tu cuenta y empieza a entrenar inmediatamente',
+    confirm_password: 'Confirmar Contraseña',
+    signup: 'Crear Cuenta',
+    have_account: '¿Ya tienes una cuenta?',
+    login_link: ' Iniciar sesión',
+    forgot_password_title: '¿Olvidaste la contraseña? 🔐',
+    forgot_password_subtitle: '¡No te preocupes! Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña.',
+    send_reset_link: 'Enviar Enlace de Recuperación',
+    remembered_password: '¿Recordaste tu contraseña?',
+    email_sent: '¡Email Enviado! 📧',
+    reset_email_message: 'Enviamos un enlace para restablecer tu contraseña a',
+    check_email_instruction: 'Revisa tu bandeja de entrada y sigue las instrucciones en el email para crear una nueva contraseña.',
+    back_to_login: 'Volver al Login',
+    resend_email: '¿No recibiste el email?',
+    resend: 'Reenviar',
   }
 };
 

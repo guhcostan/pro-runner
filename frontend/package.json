@@ -73,6 +73,7 @@
     "expo-web-browser": "~14.1.6",
     "react": "19.0.0",
     "react-dom": "19.0.0",
+    "react-error-boundary": "^6.0.0",
     "react-hook-form": "^7.48.2",
     "react-native": "0.79.3",
     "react-native-gesture-handler": "~2.24.0",

@@ -118,6 +118,13 @@ export default function LoginScreen() {
               loading={isLoading}
               style={styles.loginButton}
             />
+
+            <TouchableOpacity 
+              onPress={() => router.push('/auth/forgot-password' as any)}
+              style={styles.forgotPassword}
+            >
+              <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.footer}>
@@ -192,5 +199,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: ProRunnerColors.primary,
     fontWeight: '600',
+  },
+  forgotPassword: {
+    alignItems: 'center',
+    marginTop: 16,
+    padding: 8,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    color: ProRunnerColors.textMuted,
+    textDecorationLine: 'underline',
   },
 }); 

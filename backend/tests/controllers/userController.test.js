@@ -1,9 +1,60 @@
 const request = require('supertest');
 const app = require('../../src/index');
 
+// Mock do módulo supabase
+jest.mock('../../src/config/supabase.js', () => ({
+  supabase: {
+    auth: {
+      getUser: jest.fn()
+    },
+    from: jest.fn(() => ({
+      select: jest.fn(() => ({
+        eq: jest.fn(() => ({
+          single: jest.fn(() => Promise.resolve({ data: null, error: { code: 'PGRST116' } })),
+          limit: jest.fn(() => Promise.resolve({ data: [], error: null })),
+          order: jest.fn(() => ({
+            limit: jest.fn(() => Promise.resolve({ data: [], error: null }))
+          }))
+        }))
+      })),
+      insert: jest.fn(() => ({
+        select: jest.fn(() => ({
+          single: jest.fn(() => Promise.resolve({ 
+            data: { 
+              id: 'test-user-id', 
+              name: 'João Silva',
+              height: 175,
+              weight: 70.5,
+              personal_record_5k: '25:30',
+              goal: 'improve_time',
+              weekly_frequency: 3,
+              auth_user_id: 'test-auth-id'
+            }, 
+            error: null 
+          }))
+        }))
+      })),
+      update: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
+      })),
+      delete: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ data: null, error: null }))
+      }))
+    }))
+  }
+}));
+
+const { supabase: mockSupabase } = require('../../src/config/supabase.js');
+
 describe('User Controller', () => {
   let testUserId;
   let testAuthUserId;
+  const validToken = 'Bearer valid_jwt_token';
+  const mockUser = {
+    id: 'test-auth-id',
+    email: 'test@example.com',
+    user_metadata: { role: 'user' }
+  };
 
   beforeAll(() => {
     // Set up test data with unique UUID
@@ -11,8 +62,12 @@ describe('User Controller', () => {
     testAuthUserId = `550e8400-e29b-41d4-a716-${timestamp.padStart(12, '0')}`;
   });
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('POST /api/users', () => {
-    it('should create a new user successfully', async () => {
+    it('should create a new user successfully without token (optionalAuth)', async () => {
       const userData = {
         name: 'João Silva',
         height: 175,
@@ -36,6 +91,32 @@ describe('User Controller', () => {
 
       // Save user ID for later tests
       testUserId = response.body.user.id;
+    });
+
+    it('should create a new user successfully with valid token (optionalAuth)', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null
+      });
+
+      const userData = {
+        name: 'João Silva Autenticado',
+        height: 175,
+        weight: 70.5,
+        personal_record_5k: '25:30',
+        goal: 'improve_time',
+        weekly_frequency: 3,
+        auth_user_id: testAuthUserId
+      };
+
+      const response = await request(app)
+        .post('/api/users')
+        .set('Authorization', validToken)
+        .send(userData)
+        .expect(201);
+
+      expect(mockSupabase.auth.getUser).toHaveBeenCalledWith('valid_jwt_token');
+      expect(response.body).toHaveProperty('message', 'Usuário criado com sucesso');
     });
 
     it('should return 400 for invalid data', async () => {
@@ -71,76 +152,226 @@ describe('User Controller', () => {
   });
 
   describe('GET /api/users/:id', () => {
-    it('should get user by ID successfully', async () => {
+    it('should return 401 without token', async () => {
       const response = await request(app)
-        .get(`/api/users/${testUserId}`)
+        .get('/api/users/test-user-id')
+        .expect(401);
+
+      expect(response.body).toEqual({
+        error: 'Token de acesso necessário',
+        message: 'Forneça um token válido no cabeçalho Authorization'
+      });
+    });
+
+    it('should get user by ID successfully with valid token', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null
+      });
+
+      // Mock the database response for user lookup
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ 
+              data: { 
+                id: 'test-user-id', 
+                name: 'João Silva',
+                height: 175,
+                weight: 70.5,
+                personal_record_5k: '25:30',
+                goal: 'improve_time',
+                weekly_frequency: 3
+              }, 
+              error: null 
+            }))
+          }))
+        }))
+      });
+
+      const response = await request(app)
+        .get('/api/users/test-user-id')
+        .set('Authorization', validToken)
         .expect(200);
 
+      expect(mockSupabase.auth.getUser).toHaveBeenCalledWith('valid_jwt_token');
       expect(response.body).toHaveProperty('user');
-      expect(response.body.user).toHaveProperty('id', testUserId);
+      expect(response.body.user).toHaveProperty('id', 'test-user-id');
       expect(response.body.user).toHaveProperty('name', 'João Silva');
     });
 
-    it('should return 404 for non-existent user ID', async () => {
+    it('should return 404 for non-existent user ID with valid token', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null
+      });
+
+      // Mock database to return no user
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ 
+              data: null, 
+              error: { code: 'PGRST116' } 
+            }))
+          }))
+        }))
+      });
+
       const nonExistentId = '99999999-9999-9999-9999-999999999999';
       
       const response = await request(app)
         .get(`/api/users/${nonExistentId}`)
+        .set('Authorization', validToken)
         .expect(404);
 
       expect(response.body).toHaveProperty('error', 'Usuário não encontrado');
-    });
-
-    it('should return 400 for missing user ID', async () => {
-      const response = await request(app)
-        .get('/api/users/')
-        .expect(404); // This will be handled by the route not found middleware
     });
   });
 
   describe('GET /api/users/auth/:authUserId', () => {
-    it('should get user by auth ID successfully', async () => {
+    it('should return 401 without token', async () => {
       const response = await request(app)
-        .get(`/api/users/auth/${testAuthUserId}`)
-        .expect(200);
+        .get('/api/users/auth/test-auth-id')
+        .expect(401);
 
-      expect(response.body).toHaveProperty('user');
-      expect(response.body.user).toHaveProperty('name', 'João Silva');
-      expect(response.body.user).toHaveProperty('id', testUserId);
+      expect(response.body.error).toBe('Token de acesso necessário');
     });
 
-    it('should return 404 for non-existent auth user ID', async () => {
-      const nonExistentAuthId = '99999999-9999-9999-9999-999999999999'; // Valid UUID but non-existent
+         it('should get user by auth ID successfully with valid token', async () => {
+       mockSupabase.auth.getUser.mockResolvedValue({
+         data: { user: mockUser },
+         error: null
+       });
+
+       // Mock successful user lookup for getUserByAuthId (uses order().limit())
+       mockSupabase.from.mockReturnValue({
+         select: jest.fn(() => ({
+           eq: jest.fn(() => ({
+             order: jest.fn(() => ({
+               limit: jest.fn(() => Promise.resolve({ 
+                 data: [{ 
+                   id: 'test-user-id', 
+                   name: 'João Silva',
+                   height: 175,
+                   weight: 70.5,
+                   personal_record_5k: '25:30',
+                   goal: 'improve_time',
+                   weekly_frequency: 3,
+                   auth_user_id: testAuthUserId,
+                   created_at: '2024-01-01T00:00:00.000Z'
+                 }], 
+                 error: null 
+               }))
+             }))
+           }))
+         }))
+       });
+
+       const response = await request(app)
+         .get(`/api/users/auth/${testAuthUserId}`)
+         .set('Authorization', validToken)
+         .expect(200);
+
+       expect(response.body).toHaveProperty('user');
+       expect(response.body.user).toHaveProperty('name', 'João Silva');
+       expect(response.body.user).toHaveProperty('id', 'test-user-id');
+     });
+
+    it('should return 404 for non-existent auth user ID with valid token', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null
+      });
+
+      // Mock database to return no user
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ 
+              data: null, 
+              error: { code: 'PGRST116' } 
+            }))
+          }))
+        }))
+      });
+
+      const nonExistentAuthId = '99999999-9999-9999-9999-999999999999';
       
       const response = await request(app)
         .get(`/api/users/auth/${nonExistentAuthId}`)
+        .set('Authorization', validToken)
         .expect(404);
 
       expect(response.body).toHaveProperty('error', 'Usuário não encontrado');
     });
 
-    it('should return 400 for missing auth user ID', async () => {
+    it('should return 401 with invalid token', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: null },
+        error: { message: 'Invalid token' }
+      });
+
       const response = await request(app)
-        .get('/api/users/auth/')
-        .expect(404); // This will be handled by the route not found middleware
+        .get('/api/users/auth/test-auth-id')
+        .set('Authorization', 'Bearer invalid_token')
+        .expect(401);
+
+      expect(response.body.error).toBe('Token inválido');
     });
   });
 
   describe('Edge cases and error handling', () => {
-    it('should handle database connection errors gracefully', async () => {
-      // This test would require mocking the database connection
-      // For now, we'll just test that the endpoint exists and responds
-      const response = await request(app)
-        .get('/api/users/auth/some-auth-id')
-        .expect(404); // Expecting 404 since this auth ID doesn't exist
+         it('should handle database errors gracefully', async () => {
+       mockSupabase.auth.getUser.mockResolvedValue({
+         data: { user: mockUser },
+         error: null
+       });
 
-      expect(response.body).toHaveProperty('error');
-    });
+       // Mock database error for getUserByAuthId (uses order().limit(), not single())
+       mockSupabase.from.mockReturnValue({
+         select: jest.fn(() => ({
+           eq: jest.fn(() => ({
+             order: jest.fn(() => ({
+               limit: jest.fn(() => Promise.resolve({ 
+                 data: null, 
+                 error: { message: 'Database connection failed', code: 'CONNECTION_ERROR' } 
+               }))
+             }))
+           }))
+         }))
+       });
+
+       const response = await request(app)
+         .get('/api/users/auth/550e8400-e29b-41d4-a716-123456789012')
+         .set('Authorization', validToken)
+         .expect(500);
+
+       expect(response.body).toHaveProperty('error', 'Erro ao buscar usuário');
+     });
 
     it('should validate auth_user_id parameter correctly', async () => {
+      mockSupabase.auth.getUser.mockResolvedValue({
+        data: { user: mockUser },
+        error: null
+      });
+
+      // Mock database to return no user for invalid UUID
+      mockSupabase.from.mockReturnValue({
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn(() => Promise.resolve({ 
+              data: null, 
+              error: { code: 'PGRST116' } 
+            }))
+          }))
+        }))
+      });
+
       const response = await request(app)
-        .get('/api/users/auth/invalid-uuid') // Invalid UUID format
-        .expect(404); // Invalid UUID format gets treated as not found
+        .get('/api/users/auth/invalid-uuid')
+        .set('Authorization', validToken)
+        .expect(404);
 
       expect(response.body).toHaveProperty('error', 'Usuário não encontrado');
     });

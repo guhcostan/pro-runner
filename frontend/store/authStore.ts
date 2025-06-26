@@ -14,6 +14,8 @@ interface AuthState {
   signUp: (email: string, password: string) => Promise<{ error?: any }>;
   signIn: (email: string, password: string) => Promise<{ error?: any }>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error?: any }>;
+  resendConfirmation: (email: string) => Promise<{ error?: any }>;
   setUser: (user: User | null) => void;
   setSession: (session: Session | null) => void;
   setLoading: (loading: boolean) => void;
@@ -116,6 +118,39 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: false,
           isLoading: false 
         });
+        }
+      },
+      
+      resetPassword: async (email: string) => {
+        set({ isLoading: true });
+        
+        try {
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'com.prorunner://reset-password',
+          });
+          
+          set({ isLoading: false });
+          return { error };
+        } catch (error) {
+          set({ isLoading: false });
+          return { error };
+        }
+      },
+      
+      resendConfirmation: async (email: string) => {
+        set({ isLoading: true });
+        
+        try {
+          const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email: email,
+          });
+          
+          set({ isLoading: false });
+          return { error };
+        } catch (error) {
+          set({ isLoading: false });
+          return { error };
         }
       },
       

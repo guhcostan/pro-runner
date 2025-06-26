@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { User, TrainingPlan } from '../store/userStore';
+import { supabase } from '../lib/supabase';
 
 // Configure the base URL - update this to match your backend URL
 const API_BASE_URL = __DEV__ 
-  ? 'http://192.168.0.51:3000/api' 
+  ? 'http://localhost:3000/api' 
   : 'https://pro-runner.onrender.com/api';
 
 const api = axios.create({
@@ -14,8 +15,18 @@ const api = axios.create({
   },
 });
 
-// Request interceptor for logging
-api.interceptors.request.use((config) => {
+// Request interceptor for authentication and logging
+api.interceptors.request.use(async (config) => {
+  // Add authentication token if available
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      config.headers.Authorization = `Bearer ${session.access_token}`;
+    }
+  } catch (error) {
+    console.warn('Failed to get auth token:', error);
+  }
+
   if (__DEV__) {
     console.log('API Request:', config.method?.toUpperCase(), config.url);
   }

@@ -7,6 +7,7 @@ const planRoutes = require('./routes/planRoutes.js');
 const motivationalRoutes = require('./routes/motivational.js');
 const cacheRoutes = require('./routes/cacheRoutes.js');
 const performanceRoutes = require('./routes/performanceRoutes.js');
+const adaptiveRoutes = require('./routes/adaptiveRoutes.js');
 const { createRateLimit } = require('./middleware/auth.js');
 const { errorHandler, notFoundHandler } = require('./middleware/errorHandler.js');
 const logger = require('./config/logger.js');
@@ -37,6 +38,7 @@ app.use((req, res, next) => {
 // Rate limiting middleware
 app.use('/api/users', createRateLimit(15 * 60 * 1000, 20)); // 20 requests per 15 minutes for user operations
 app.use('/api/plans', createRateLimit(15 * 60 * 1000, 30)); // 30 requests per 15 minutes for plan operations
+app.use('/api/adaptive', createRateLimit(15 * 60 * 1000, 50)); // 50 requests per 15 minutes for adaptive operations
 
 // Routes
 app.use('/api/users', userRoutes);
@@ -44,6 +46,7 @@ app.use('/api/plans', planRoutes);
 app.use('/api/motivational', motivationalRoutes);
 app.use('/api/cache', cacheRoutes);
 app.use('/api/performance', performanceRoutes);
+app.use('/api/adaptive', adaptiveRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

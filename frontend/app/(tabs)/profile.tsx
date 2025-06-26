@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -17,12 +17,94 @@ import { Button } from '../../components/ui/Button';
 import { useUserStore } from '../../store/userStore';
 import { useAuthStore } from '../../store/authStore';
 import { translateFitnessLevel, getGoalDisplayName } from '../../lib/utils';
+import { XPProgressBar } from '../../components/progression/XPProgressBar';
+import { TrainingPhaseCard } from '../../components/progression/TrainingPhaseCard';
+import { AchievementsCard } from '../../components/progression/AchievementsCard';
+import { apiService, UserProgress, TrainingPhase, GamifiedStats } from '../../services/api';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, plan, clearData, setPlan } = useUserStore();
   const { signOut } = useAuthStore();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
+  const [gamifiedStats, setGamifiedStats] = useState<GamifiedStats | null>(null);
+  const [trainingPhases, setTrainingPhases] = useState<TrainingPhase[]>([]);
+  // isLoading state removed as it's not used in the current implementation
+
+  const loadAdaptiveData = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      // Load all adaptive data in parallel
+      const [progressResponse, statsResponse, phasesResponse] = await Promise.all([
+        apiService.getUserProgress(user.id),
+        apiService.getGamifiedStats(user.id),
+        apiService.getTrainingPhases(),
+      ]);
+
+      if (progressResponse.success) {
+        setUserProgress(progressResponse.data);
+      }
+
+      if (statsResponse.success) {
+        setGamifiedStats(statsResponse.data);
+      }
+
+      if (phasesResponse.success) {
+        setTrainingPhases(phasesResponse.data);
+      }
+    } catch (error) {
+      console.error('Error loading adaptive data:', error);
+      // Don't show error to user, just gracefully degrade
+    } finally {
+      // Loading state management removed for simplicity
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    loadAdaptiveData();
+  }, [loadAdaptiveData]);
+
+  const handleAdvancePhase = async () => {
+    if (!user?.id || !gamifiedStats?.phaseAdvancement.nextPhase) return;
+
+    Alert.alert(
+      'Avançar para Próxima Fase',
+      `Tem certeza que deseja avançar para a fase ${gamifiedStats.phaseAdvancement.nextPhase.name}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Avançar',
+          style: 'default',
+          onPress: async () => {
+            try {
+              const response = await apiService.advanceToNextPhase(
+                user.id,
+                gamifiedStats.phaseAdvancement.nextPhase!.id
+              );
+              
+              if (response.success) {
+                Alert.alert('Sucesso!', response.message);
+                loadAdaptiveData(); // Reload data
+              }
+            } catch (error) {
+              console.error('Error advancing phase:', error);
+              Alert.alert('Erro', 'Não foi possível avançar de fase. Tente novamente.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleAchievementPress = (achievement: any) => {
+    Alert.alert(
+      achievement.name,
+      achievement.description,
+      [{ text: 'OK' }]
+    );
+  };
 
   if (!user) {
     return (
@@ -97,8 +179,42 @@ export default function ProfileScreen() {
             <Ionicons name="person" size={48} color={ProRunnerColors.textPrimary} />
           </View>
           <Text style={styles.name}>{user.name}</Text>
-          <Text style={styles.subtitle}>Corredor ProRunner</Text>
+          <Text style={styles.subtitle}>
+            {userProgress ? 
+              `Nível ${userProgress.currentLevel} • ${userProgress.currentPhase}` : 
+              'Corredor ProRunner'
+            }
+          </Text>
         </View>
+
+        {/* XP Progress Bar */}
+        {userProgress && (
+          <XPProgressBar
+            currentXP={userProgress.currentXP}
+            xpToNextLevel={userProgress.xpToNextLevel}
+            currentLevel={userProgress.currentLevel}
+            totalXPEarned={userProgress.totalXPEarned}
+          />
+        )}
+
+        {/* Training Phase Card */}
+        {gamifiedStats && trainingPhases.length > 0 && (
+          <TrainingPhaseCard
+            currentPhase={trainingPhases.find(p => p.name === userProgress?.currentPhase) || trainingPhases[0]}
+            canAdvance={gamifiedStats.phaseAdvancement.canAdvance}
+            nextPhase={gamifiedStats.phaseAdvancement.nextPhase}
+            missingCriteria={gamifiedStats.phaseAdvancement.missingCriteria}
+            onAdvancePress={handleAdvancePhase}
+          />
+        )}
+
+        {/* Achievements Card */}
+        {userProgress && (
+          <AchievementsCard
+            achievements={userProgress.achievements}
+            onAchievementPress={handleAchievementPress}
+          />
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Dados Pessoais</Text>

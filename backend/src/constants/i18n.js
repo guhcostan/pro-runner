@@ -22,6 +22,22 @@ const i18n = {
       stats_cleared: 'Estatísticas de performance limpas com sucesso',
       overview_retrieved: 'Visão geral de performance obtida com sucesso',
       export_success: 'Dados de performance exportados com sucesso'
+    },
+    adaptive: {
+      plan_generated: 'Plano adaptativo gerado com sucesso',
+      plan_generation_failed: 'Falha ao gerar plano adaptativo',
+      progress_updated: 'Progresso atualizado com sucesso',
+      progress_not_found: 'Progresso do usuário não encontrado',
+      phase_advanced: 'Fase avançada com sucesso para {{phase}}',
+      phase_advancement_failed: 'Falha ao avançar de fase',
+      max_phase_reached: 'Fase máxima já alcançada',
+      invalid_phase: 'Fase inválida especificada',
+      xp_calculated: 'XP calculado com sucesso: {{xp}} pontos',
+      level_up: 'Parabéns! Você subiu para o nível {{level}}!',
+      workout_completed: 'Treino completado com sucesso',
+      achievement_unlocked: 'Nova conquista desbloqueada: {{achievement}}',
+      stats_retrieved: 'Estatísticas gamificadas obtidas com sucesso',
+      phases_retrieved: 'Fases de treinamento obtidas com sucesso'
     }
   },
   en: {
@@ -47,6 +63,22 @@ const i18n = {
       stats_cleared: 'Performance statistics cleared successfully',
       overview_retrieved: 'Performance overview retrieved successfully',
       export_success: 'Performance data exported successfully'
+    },
+    adaptive: {
+      plan_generated: 'Adaptive plan generated successfully',
+      plan_generation_failed: 'Failed to generate adaptive plan',
+      progress_updated: 'Progress updated successfully',
+      progress_not_found: 'User progress not found',
+      phase_advanced: 'Phase advanced successfully to {{phase}}',
+      phase_advancement_failed: 'Failed to advance phase',
+      max_phase_reached: 'Maximum phase already reached',
+      invalid_phase: 'Invalid phase specified',
+      xp_calculated: 'XP calculated successfully: {{xp}} points',
+      level_up: 'Congratulations! You leveled up to level {{level}}!',
+      workout_completed: 'Workout completed successfully',
+      achievement_unlocked: 'New achievement unlocked: {{achievement}}',
+      stats_retrieved: 'Gamified stats retrieved successfully',
+      phases_retrieved: 'Training phases retrieved successfully'
     }
   },
   es: {
@@ -72,6 +104,22 @@ const i18n = {
       stats_cleared: 'Estadísticas de rendimiento limpiadas exitosamente',
       overview_retrieved: 'Vista general de rendimiento obtenida exitosamente',
       export_success: 'Datos de rendimiento exportados exitosamente'
+    },
+    adaptive: {
+      plan_generated: 'Plan adaptativo generado exitosamente',
+      plan_generation_failed: 'Error al generar plan adaptativo',
+      progress_updated: 'Progreso actualizado exitosamente',
+      progress_not_found: 'Progreso del usuario no encontrado',
+      phase_advanced: 'Fase avanzada exitosamente a {{phase}}',
+      phase_advancement_failed: 'Error al avanzar de fase',
+      max_phase_reached: 'Fase máxima ya alcanzada',
+      invalid_phase: 'Fase inválida especificada',
+      xp_calculated: 'XP calculado exitosamente: {{xp}} puntos',
+      level_up: '¡Felicitaciones! ¡Subiste al nivel {{level}}!',
+      workout_completed: 'Entrenamiento completado exitosamente',
+      achievement_unlocked: 'Nuevo logro desbloqueado: {{achievement}}',
+      stats_retrieved: 'Estadísticas gamificadas obtenidas exitosamente',
+      phases_retrieved: 'Fases de entrenamiento obtenidas exitosamente'
     }
   }
 };

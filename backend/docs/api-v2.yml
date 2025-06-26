@@ -1,0 +1,869 @@
+openapi: 3.0.3
+info:
+  title: ProRunner API v2.0 - Adaptive Training System
+  description: |
+    ProRunner v2.0 introduces a revolutionary adaptive training system that replaces fixed goal-based plans with continuous, gamified progression. 
+    
+    ## Key Features
+    - **Adaptive Training Plans**: AI-generated plans that adjust based on performance
+    - **Gamification System**: XP, levels, achievements, and phase progression
+    - **Multi-language Support**: Portuguese, English, and Spanish
+    - **Legacy Compatibility**: Backward compatibility with v1.0 plans
+    
+    ## Migration Guide
+    The API maintains backward compatibility while introducing new adaptive endpoints. Existing v1.0 endpoints continue to work, allowing gradual migration.
+    
+    ## Authentication
+    All endpoints require Bearer token authentication via Supabase JWT.
+    
+  version: 2.0.0
+  contact:
+    name: ProRunner Development Team
+    email: dev@prorunner.app
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://pro-runner.onrender.com/api
+    description: Production server
+  - url: http://localhost:3000/api
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # =============================================================================
+  # ADAPTIVE SYSTEM ENDPOINTS
+  # =============================================================================
+  
+  /adaptive/users/{userId}/progress:
+    get:
+      tags:
+        - Adaptive System
+      summary: Get user's adaptive progress
+      description: |
+        Retrieves comprehensive progress information including current level, XP, phase, and achievements.
+        Results are cached for 2 minutes for optimal performance.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier for the user
+      responses:
+        '200':
+          description: User progress retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/UserProgress'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /adaptive/users/{userId}/adaptive-plan:
+    post:
+      tags:
+        - Adaptive System
+      summary: Generate adaptive training plan
+      description: |
+        Generates a personalized training plan based on user's current fitness level, phase, and preferences.
+        Uses AI-powered algorithms to create optimal workout sequences.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                preferences:
+                  type: object
+                  properties:
+                    focus:
+                      type: string
+                      enum: [endurance, speed, strength, recovery]
+                      description: Training focus area
+                    intensity:
+                      type: string
+                      enum: [low, moderate, high]
+                      description: Preferred training intensity
+                    duration:
+                      type: integer
+                      minimum: 20
+                      maximum: 120
+                      description: Preferred workout duration in minutes
+                    frequency:
+                      type: integer
+                      minimum: 2
+                      maximum: 7
+                      description: Workouts per week
+              example:
+                preferences:
+                  focus: "endurance"
+                  intensity: "moderate"
+                  duration: 45
+                  frequency: 4
+      responses:
+        '200':
+          description: Adaptive plan generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/AdaptivePlan'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /adaptive/users/{userId}/stats:
+    get:
+      tags:
+        - Adaptive System
+      summary: Get gamified statistics
+      description: |
+        Retrieves comprehensive gamification statistics including level progression, rankings, and milestones.
+        Results are cached for 3 minutes for optimal performance.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Gamified stats retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/GamifiedStats'
+
+  /adaptive/users/{userId}/phase/advance:
+    post:
+      tags:
+        - Adaptive System
+      summary: Advance to next training phase
+      description: |
+        Advances user to the next training phase after meeting advancement criteria.
+        Automatically updates user progress and generates new plan templates.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - newPhaseId
+              properties:
+                newPhaseId:
+                  type: integer
+                  description: ID of the new training phase
+              example:
+                newPhaseId: 2
+      responses:
+        '200':
+          description: Phase advancement successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      newPhase:
+                        $ref: '#/components/schemas/TrainingPhase'
+                      updatedProgress:
+                        $ref: '#/components/schemas/UserProgress'
+                  message:
+                    type: string
+                    example: "phase_advancement_success"
+
+  /adaptive/workouts/{workoutId}/complete:
+    post:
+      tags:
+        - Adaptive System
+      summary: Complete a workout
+      description: |
+        Records workout completion and calculates XP rewards, level progression, and achievements.
+        Triggers adaptive plan adjustments based on performance.
+      parameters:
+        - name: workoutId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkoutCompletionRequest'
+      responses:
+        '200':
+          description: Workout completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutCompletionResponse'
+
+  /adaptive/phases:
+    get:
+      tags:
+        - Adaptive System
+      summary: Get all training phases
+      description: |
+        Retrieves all available training phases with descriptions and requirements.
+        Results are cached for 30 minutes as phases rarely change.
+      responses:
+        '200':
+          description: Training phases retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrainingPhase'
+
+  # =============================================================================
+  # LEGACY ENDPOINTS (v1.0 Compatibility)
+  # =============================================================================
+
+  /users:
+    post:
+      tags:
+        - Users (Legacy)
+      summary: Create new user
+      description: Creates a new user profile (legacy endpoint with v2.0 enhancements)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUserResponse'
+
+  /users/{userId}:
+    get:
+      tags:
+        - Users (Legacy)
+      summary: Get user by ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  /plans:
+    post:
+      tags:
+        - Plans (Legacy)
+      summary: Create training plan (legacy)
+      description: Legacy endpoint for creating fixed-goal training plans
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanRequest'
+      responses:
+        '201':
+          description: Plan created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePlanResponse'
+
+  /motivational/daily:
+    get:
+      tags:
+        - Motivational
+      summary: Get daily motivational quote
+      parameters:
+        - name: language
+          in: query
+          schema:
+            type: string
+            enum: [pt, en, es]
+            default: pt
+      responses:
+        '200':
+          description: Daily quote retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MotivationalQuoteResponse'
+
+# =============================================================================
+# COMPONENTS
+# =============================================================================
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase JWT token
+
+  schemas:
+    # Adaptive System Schemas
+    UserProgress:
+      type: object
+      properties:
+        currentLevel:
+          type: integer
+          minimum: 1
+          maximum: 50
+          description: Current user level (1-50)
+          example: 12
+        currentXP:
+          type: integer
+          minimum: 0
+          description: Current XP in current level
+          example: 750
+        xpToNextLevel:
+          type: integer
+          minimum: 1
+          description: Total XP required for next level
+          example: 1200
+        totalXPEarned:
+          type: integer
+          minimum: 0
+          description: Total XP earned across all levels
+          example: 15750
+        totalWorkouts:
+          type: integer
+          minimum: 0
+          description: Total completed workouts
+          example: 87
+        currentPhase:
+          type: string
+          description: Current training phase name
+          example: "Foundation"
+        achievements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Achievement'
+
+    Achievement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique achievement identifier
+        name:
+          type: string
+          description: Achievement name (localized)
+          example: "First Steps"
+        description:
+          type: string
+          description: Achievement description (localized)
+          example: "Complete your first workout"
+        badge_emoji:
+          type: string
+          description: Emoji representation of the achievement
+          example: "🏃"
+        criteria_type:
+          type: string
+          enum: [workouts_completed, distance_total, xp_earned, level_reached]
+          description: Type of criteria for unlocking
+        criteria_value:
+          type: integer
+          description: Value required to unlock achievement
+          example: 1
+        earned_at:
+          type: string
+          format: date-time
+          description: When the achievement was earned (null if not earned)
+          example: "2024-01-15T10:30:00Z"
+
+    TrainingPhase:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Unique phase identifier
+          example: 1
+        name:
+          type: string
+          description: Phase name (localized)
+          example: "Foundation"
+        description:
+          type: string
+          description: Phase description (localized)
+          example: "Build your running foundation with consistent, moderate-intensity workouts"
+        phase_order:
+          type: integer
+          description: Order of the phase in progression
+          example: 1
+        is_active:
+          type: boolean
+          description: Whether the phase is currently active
+          example: true
+
+    AdaptivePlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique plan identifier
+        workouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workout'
+        assessment:
+          type: object
+          properties:
+            currentFitness:
+              type: string
+              description: Assessed fitness level
+              example: "intermediate"
+            recommendations:
+              type: array
+              items:
+                type: string
+              description: Personalized recommendations
+              example: ["Focus on building endurance", "Incorporate interval training"]
+        message:
+          type: string
+          description: Localized message about the plan
+          example: "plan_generated_success"
+
+    Workout:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "Endurance Run"
+        type:
+          type: string
+          enum: [easy_run, tempo_run, interval_training, long_run, recovery_run]
+        duration:
+          type: integer
+          description: Duration in minutes
+          example: 45
+        distance:
+          type: number
+          format: float
+          description: Distance in kilometers
+          example: 5.5
+        intensity:
+          type: string
+          enum: [low, moderate, high]
+        instructions:
+          type: string
+          description: Workout instructions (localized)
+        xp_reward:
+          type: integer
+          description: XP reward for completion
+          example: 150
+
+    GamifiedStats:
+      type: object
+      properties:
+        currentLevel:
+          type: integer
+          example: 12
+        currentXP:
+          type: integer
+          example: 750
+        xpToNextLevel:
+          type: integer
+          example: 1200
+        totalXPEarned:
+          type: integer
+          example: 15750
+        ranking:
+          type: object
+          properties:
+            position:
+              type: integer
+              description: User's ranking position
+              example: 23
+            totalUsers:
+              type: integer
+              description: Total users in ranking
+              example: 1247
+        nextMilestones:
+          type: object
+          properties:
+            nextLevel:
+              type: integer
+              example: 13
+            xpToNextLevel:
+              type: integer
+              example: 450
+            nextAchievement:
+              $ref: '#/components/schemas/Achievement'
+        phaseAdvancement:
+          type: object
+          properties:
+            canAdvance:
+              type: boolean
+              description: Whether user can advance to next phase
+              example: false
+            nextPhase:
+              $ref: '#/components/schemas/TrainingPhase'
+            missingCriteria:
+              type: array
+              items:
+                type: string
+              description: Criteria still needed for advancement
+              example: ["Complete 5 more workouts", "Reach level 15"]
+
+    WorkoutCompletionRequest:
+      type: object
+      required:
+        - userId
+        - distance
+        - duration
+        - type
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: User completing the workout
+        distance:
+          type: number
+          format: float
+          minimum: 0.1
+          description: Distance completed in kilometers
+          example: 5.2
+        duration:
+          type: integer
+          minimum: 1
+          description: Duration in minutes
+          example: 32
+        type:
+          type: string
+          enum: [easy_run, tempo_run, interval_training, long_run, recovery_run]
+          description: Type of workout completed
+        difficulty:
+          type: string
+          enum: [easy, moderate, hard]
+          description: Perceived difficulty
+          example: "moderate"
+
+    WorkoutCompletionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            xpEarned:
+              type: integer
+              description: XP earned from this workout
+              example: 150
+            leveledUp:
+              type: boolean
+              description: Whether user leveled up
+              example: false
+            newLevel:
+              type: integer
+              description: New level if leveled up
+              example: null
+            achievementsEarned:
+              type: array
+              items:
+                $ref: '#/components/schemas/Achievement'
+              description: New achievements unlocked
+            updatedProgress:
+              $ref: '#/components/schemas/UserProgress'
+
+    # Legacy Schemas
+    CreateUserRequest:
+      type: object
+      required:
+        - name
+        - height
+        - weight
+        - personal_record_5k
+        - goal
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "João Silva"
+        height:
+          type: number
+          format: float
+          minimum: 1.0
+          maximum: 2.5
+          description: Height in meters
+          example: 1.75
+        weight:
+          type: number
+          format: float
+          minimum: 30
+          maximum: 200
+          description: Weight in kilograms
+          example: 70.5
+        personal_record_5k:
+          type: string
+          pattern: '^([0-5]?[0-9]):([0-5][0-9])$'
+          description: Personal record for 5K in MM:SS format
+          example: "25:30"
+        goal:
+          type: string
+          enum: [lose_weight, improve_endurance, increase_speed, general_fitness]
+          description: Primary fitness goal
+        goal_date:
+          type: string
+          format: date
+          description: Target date for goal (optional for v2.0)
+          example: "2024-12-31"
+        auth_user_id:
+          type: string
+          format: uuid
+          description: Supabase auth user ID
+
+    CreateUserResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "user_created_success"
+        user:
+          $ref: '#/components/schemas/User'
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: "João Silva"
+        height:
+          type: number
+          format: float
+          example: 1.75
+        weight:
+          type: number
+          format: float
+          example: 70.5
+        personal_record_5k:
+          type: string
+          example: "25:30"
+        goal:
+          type: string
+          example: "improve_endurance"
+        goal_date:
+          type: string
+          format: date
+          example: "2024-12-31"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreatePlanRequest:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          format: uuid
+        force:
+          type: boolean
+          default: false
+          description: Force recreation of existing plan
+
+    CreatePlanResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "plan_created_success"
+        plan:
+          $ref: '#/components/schemas/TrainingPlan'
+
+    TrainingPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        weeks:
+          type: array
+          items:
+            type: object
+            properties:
+              week:
+                type: integer
+              workouts:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Workout'
+        created_at:
+          type: string
+          format: date-time
+
+    MotivationalQuoteResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            quote:
+              type: string
+              description: Motivational quote (localized)
+              example: "A jornada de mil quilômetros começa com um único passo."
+            date:
+              type: string
+              format: date
+              description: Date of the quote
+              example: "2024-01-15"
+            language:
+              type: string
+              enum: [pt, en, es]
+              description: Language of the quote
+              example: "pt"
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid parameters
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: string
+                example: "validation_error"
+              details:
+                type: array
+                items:
+                  type: string
+                example: ["userId is required", "distance must be positive"]
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: string
+                example: "user_not_found"
+              message:
+                type: string
+                example: "User with specified ID was not found"
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              error:
+                type: string
+                example: "internal_server_error"
+              message:
+                type: string
+                example: "An unexpected error occurred"
+
+tags:
+  - name: Adaptive System
+    description: |
+      Core adaptive training system endpoints for the new gamified experience.
+      These endpoints provide AI-powered plan generation, XP tracking, and phase progression.
+  - name: Users (Legacy)
+    description: User management endpoints (backward compatible with v1.0)
+  - name: Plans (Legacy)
+    description: Legacy training plan endpoints (maintained for backward compatibility)
+  - name: Motivational
+    description: Motivational quotes and content endpoints 

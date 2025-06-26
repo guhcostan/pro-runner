@@ -211,42 +211,76 @@ class PerformanceService {
    * @returns {Promise<Object>} - Database connection statistics
    */
   async getDatabaseStats() {
-    try {
-      // For now, return mock data since we don't have direct PostgreSQL access
-      // These queries would work with PostgreSQL but need Supabase Admin API:
-      // - 'SELECT COUNT(*) as active_connections FROM pg_stat_activity WHERE state = \'active\''
-      // - 'SELECT COUNT(*) as total_connections FROM pg_stat_activity'
-      // - 'SELECT query, state, query_start, now() - query_start as duration FROM pg_stat_activity WHERE state != \'idle\' ORDER BY duration DESC LIMIT 10'
-      
-      return {
-        active_connections: 'N/A (Supabase managed)',
-        total_connections: 'N/A (Supabase managed)',
-        longest_queries: 'N/A (Supabase managed)',
-        note: 'Database connection stats require Supabase Admin API access'
-      };
-    } catch (error) {
-      console.error('Error fetching database stats:', error);
-      return {
-        error: 'Unable to fetch database statistics',
-        message: error.message
-      };
-    }
+    // For now, return mock data since we don't have direct PostgreSQL access
+    // These queries would work with PostgreSQL but need Supabase Admin API:
+    // - 'SELECT COUNT(*) as active_connections FROM pg_stat_activity WHERE state = \'active\''
+    // - 'SELECT COUNT(*) as total_connections FROM pg_stat_activity'
+    // - 'SELECT query, state, query_start, now() - query_start as duration FROM pg_stat_activity WHERE state != \'idle\' ORDER BY duration DESC LIMIT 10'
+    
+    return {
+      active_connections: 'N/A (Supabase managed)',
+      total_connections: 'N/A (Supabase managed)',
+      longest_queries: 'N/A (Supabase managed)',
+      note: 'Database connection stats require Supabase Admin API access'
+    };
   }
 
   /**
    * Export performance data for analysis
-   * @returns {Object} - Exportable performance data
+   * @param {string} format - Export format ('json' or 'csv')
+   * @returns {Promise<Object>} - Exportable performance data
    */
-  exportPerformanceData() {
-    return {
-      exported_at: new Date().toISOString(),
-      query_stats: Object.fromEntries(this.queryStats),
-      summary: this.getPerformanceSummary(),
-      configuration: {
-        slow_query_threshold: this.slowQueryThreshold,
-        max_stats_history: this.maxStatsHistory
+  async exportPerformanceData(format = 'json') {
+    try {
+      const stats = this.getPerformanceStats();
+      const timestamp = new Date().toISOString();
+      
+      const exportData = {
+        timestamp,
+        stats,
+        queries: Object.entries(stats.queries).map(([queryName, queryStats]) => ({
+          query: queryName,
+          duration: queryStats.avgTime,
+          success: queryStats.successCount > 0,
+          timestamp: queryStats.recentExecutions[queryStats.recentExecutions.length - 1]?.timestamp || timestamp,
+          error: queryStats.errorCount > 0 ? 'Error' : null
+        }))
+      };
+
+      if (format === 'csv') {
+        // Convert to CSV format
+        const csv = this.convertToCSV(exportData);
+        return { data: csv, contentType: 'text/csv' };
       }
-    };
+
+      return { data: JSON.stringify(exportData, null, 2), contentType: 'application/json' };
+    } catch (error) {
+      console.error('Error exporting performance data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Convert data to CSV format
+   * @param {Object} data - Data to convert
+   * @returns {string} - CSV formatted string
+   */
+  convertToCSV(data) {
+    const headers = ['Query', 'Duration', 'Success', 'Timestamp', 'Error'];
+    const rows = data.queries.map(q => [
+      q.query,
+      q.duration,
+      q.success,
+      q.timestamp,
+      q.error || ''
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+    
+    return csvContent;
   }
 }
 

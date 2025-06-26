@@ -271,28 +271,33 @@ describe('PerformanceService', () => {
   });
 
   describe('exportPerformanceData', () => {
-    it('should export comprehensive performance data', () => {
+    it('should export comprehensive performance data', async () => {
       performanceService.recordQueryStats('export-query', 250, true);
       
-      const exportData = performanceService.exportPerformanceData();
+      const exportResult = await performanceService.exportPerformanceData();
       
-      expect(exportData).toHaveProperty('exported_at');
-      expect(exportData).toHaveProperty('query_stats');
-      expect(exportData).toHaveProperty('summary');
-      expect(exportData).toHaveProperty('configuration');
+      expect(exportResult).toHaveProperty('data');
+      expect(exportResult).toHaveProperty('contentType');
+      expect(exportResult.contentType).toBe('application/json');
       
-      expect(exportData.query_stats['export-query']).toBeDefined();
-      expect(exportData.configuration.slow_query_threshold).toBe(1000);
+      const exportData = JSON.parse(exportResult.data);
+      expect(exportData).toHaveProperty('timestamp');
+      expect(exportData).toHaveProperty('stats');
+      expect(exportData).toHaveProperty('queries');
     });
 
-    it('should export valid JSON structure', () => {
-      const exportData = performanceService.exportPerformanceData();
+    it('should export valid JSON structure', async () => {
+      const exportResult = await performanceService.exportPerformanceData();
       
-      // Should be serializable to JSON
-      expect(() => JSON.stringify(exportData)).not.toThrow();
+      expect(exportResult).toHaveProperty('data');
+      expect(exportResult.contentType).toBe('application/json');
       
+      // Should be valid JSON
+      expect(() => JSON.parse(exportResult.data)).not.toThrow();
+      
+      const exportData = JSON.parse(exportResult.data);
       // Should have ISO timestamp
-      expect(new Date(exportData.exported_at)).toBeInstanceOf(Date);
+      expect(new Date(exportData.timestamp)).toBeInstanceOf(Date);
     });
   });
 

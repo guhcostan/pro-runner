@@ -1,4 +1,5 @@
 import React from 'react';
+// eslint-disable-next-line import/no-unresolved
 import { ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -14,11 +15,11 @@ interface ErrorFallbackProps {
 // Error logging service
 class ErrorLogger {
   private static instance: ErrorLogger;
-  private errors: Array<{
+  private errors: {
     error: Error;
     timestamp: string;
     context?: Record<string, any>;
-  }> = [];
+  }[] = [];
 
   static getInstance(): ErrorLogger {
     if (!ErrorLogger.instance) {

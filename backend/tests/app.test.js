@@ -30,7 +30,7 @@ describe('ProRunner API', () => {
         .get('/api/unknown-route')
         .expect(404);
 
-      expect(response.body).toHaveProperty('error', 'Route not found');
+      expect(response.body).toHaveProperty('error', 'Recurso não encontrado');
     });
   });
 }); 

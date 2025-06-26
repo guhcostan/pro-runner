@@ -150,22 +150,22 @@ const formatErrorResponse = (error, req) => {
 const handleSupabaseError = (error) => {
   // Handle common Supabase error codes
   switch (error.code) {
-    case 'PGRST116':
-      return new NotFoundError();
-    case 'PGRST301':
-      return new ValidationError('Invalid request parameters');
-    case '23505':
-      return new ValidationError('Duplicate entry - resource already exists');
-    case '23503':
-      return new ValidationError('Referenced resource does not exist');
-    case '23514':
-      return new ValidationError('Data violates database constraints');
-    case '42P01':
-      return new DatabaseError('Database table not found');
-    case '42703':
-      return new DatabaseError('Database column not found');
-    default:
-      return new DatabaseError('Database operation failed', error);
+  case 'PGRST116':
+    return new NotFoundError();
+  case 'PGRST301':
+    return new ValidationError('Invalid request parameters');
+  case '23505':
+    return new ValidationError('Duplicate entry - resource already exists');
+  case '23503':
+    return new ValidationError('Referenced resource does not exist');
+  case '23514':
+    return new ValidationError('Data violates database constraints');
+  case '42P01':
+    return new DatabaseError('Database table not found');
+  case '42703':
+    return new DatabaseError('Database column not found');
+  default:
+    return new DatabaseError('Database operation failed', error);
   }
 };
 
@@ -210,9 +210,9 @@ const handleValidationError = (error) => {
  * @param {Error} error - Error object
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @param {Function} next - Express next function
+ * @param {Function} next - Express next function (required for Express error handler)
  */
-const errorHandler = (error, req, res, next) => {
+const errorHandler = (error, req, res, next) => { // eslint-disable-line no-unused-vars
   let appError = error;
 
   // Convert known error types to AppError
@@ -279,11 +279,12 @@ const errorHandler = (error, req, res, next) => {
  * Handle 404 errors for undefined routes
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
- * @param {Function} next - Express next function
  */
-const notFoundHandler = (req, res, next) => {
+const notFoundHandler = (req, res) => {
   const error = new NotFoundError('Route');
-  next(error);
+  // Pass error to error handler middleware
+  const errorResponse = formatErrorResponse(error, req);
+  res.status(error.statusCode).json(errorResponse);
 };
 
 /**

@@ -23,7 +23,7 @@ export function Card({
 
   const getCardStyle = () => {
     const baseStyle = {
-      backgroundColor: isDark ? Colors.ui.cardDark : Colors.ui.card,
+      backgroundColor: isDark ? Colors.background.secondary : Colors.background.light,
       borderRadius: 16,
     };
 
@@ -41,7 +41,7 @@ export function Card({
         return {
           ...baseStyle,
           borderWidth: 1,
-          borderColor: isDark ? Colors.ui.borderDark : Colors.ui.border,
+          borderColor: Colors.ui.border,
         };
       case 'gradient':
         return {

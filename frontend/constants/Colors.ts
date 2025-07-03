@@ -1,38 +1,57 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * ProRunner v2.0 - Sistema de Cores Unificado
+ * Focado no sistema adaptativo e gamificado
  */
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
 export const Colors = {
+  // Temas base
   light: {
     text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
+    background: '#ffffff',
+    tint: '#10B981',
     icon: '#687076',
     tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    tabIconSelected: '#10B981',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: '#F8FAFC',
+    background: '#0F172A',
+    tint: '#10B981',
+    icon: '#64748B',
+    tabIconDefault: '#64748B',
+    tabIconSelected: '#10B981',
   },
   
-  // Sistema Gamificado - Cores de XP e Níveis
+  // Cores principais do sistema
+  primary: '#10B981',        // Verde principal - ProRunner
+  secondary: '#047857',      // Verde escuro
+  accent: '#3B82F6',        // Azul para destaques
+  
+  // Backgrounds e superfícies
+  background: {
+    primary: '#0F172A',      // Fundo principal escuro
+    secondary: '#1E293B',    // Superfícies
+    tertiary: '#334155',     // Superfícies claras
+    light: '#ffffff',        // Fundo claro
+  },
+  
+  // Textos
+  text: {
+    primary: '#F8FAFC',      // Texto principal
+    secondary: '#CBD5E1',    // Texto secundário
+    muted: '#64748B',        // Texto suave
+    inverse: '#11181C',      // Texto em fundo claro
+  },
+  
+  // Sistema de XP e gamificação
   xp: {
-    primary: '#22c55e',      // Verde principal para XP
-    secondary: '#16a34a',    // Verde escuro para barras
-    background: '#f0f9f4',   // Fundo claro
-    backgroundDark: '#052e16', // Fundo escuro
+    primary: '#22c55e',      // XP principal
+    secondary: '#16a34a',    // XP escuro
+    background: '#f0f9f4',   // Fundo XP claro
+    backgroundDark: '#052e16', // Fundo XP escuro
   },
   
-  // Fases de Treinamento
+  // Fases de treinamento adaptativo
   phases: {
     foundation: {
       primary: '#3b82f6',     // Azul - Base
@@ -66,16 +85,16 @@ export const Colors = {
     },
   },
   
-  // Status e Estados
+  // Status e estados
   status: {
-    success: '#22c55e',
-    warning: '#f59e0b',
-    error: '#ef4444',
-    info: '#3b82f6',
+    success: '#10B981',
+    warning: '#F59E0B',
+    error: '#EF4444',
+    info: '#3B82F6',
     neutral: '#6b7280',
   },
   
-  // Intensidades de Treino
+  // Intensidades de treino
   intensity: {
     easy: '#22c55e',        // Verde - Fácil
     moderate: '#f59e0b',    // Laranja - Moderado
@@ -83,59 +102,28 @@ export const Colors = {
     recovery: '#06b6d4',    // Ciano - Recuperação
   },
   
-  // Gradientes para cards e elementos visuais
-  gradients: {
-    primary: ['#3b82f6', '#1d4ed8'],
-    success: ['#22c55e', '#16a34a'],
-    warning: ['#f59e0b', '#d97706'],
-    error: ['#ef4444', '#dc2626'],
-    xp: ['#22c55e', '#16a34a'],
-  },
-  
-  // Elementos de UI
+  // Elementos de interface
   ui: {
-    border: '#e5e7eb',
-    borderDark: '#374151',
-    card: '#ffffff',
-    cardDark: '#1f2937',
+    border: '#374151',
+    borderLight: '#e5e7eb',
+    card: '#1E293B',
+    cardLight: '#ffffff',
     shadow: 'rgba(0, 0, 0, 0.1)',
     shadowDark: 'rgba(0, 0, 0, 0.3)',
+    overlay: 'rgba(0, 0, 0, 0.5)',
+  },
+  
+  // Gradientes para elementos visuais
+  gradients: {
+    primary: ['#10B981', '#047857'],
+    xp: ['#22c55e', '#16a34a'],
+    foundation: ['#3b82f6', '#1d4ed8'],
+    development: ['#f59e0b', '#d97706'],
+    performance: ['#ef4444', '#dc2626'],
+    maintenance: ['#8b5cf6', '#7c3aed'],
+    recovery: ['#06b6d4', '#0891b2'],
   },
 };
 
-// ProRunner theme colors - Dark focused
-export const ProRunnerColors = {
-  // Primary colors
-  primary: '#10B981', // Emerald green for running
-  primaryDark: '#047857',
-  primaryLight: '#34D399',
-  
-  // Background colors
-  background: '#0F172A', // Very dark blue-gray
-  surface: '#1E293B', // Dark surface
-  surfaceLight: '#334155', // Lighter surface
-  cardBackground: '#1E293B', // Card background
-  
-  // Text colors
-  textPrimary: '#F8FAFC', // Almost white
-  textSecondary: '#CBD5E1', // Light gray
-  textMuted: '#64748B', // Muted gray
-  
-  // Accent colors
-  accent: '#3B82F6', // Blue for accents
-  success: '#10B981', // Green for success
-  warning: '#F59E0B', // Orange for warnings
-  error: '#EF4444', // Red for errors
-  
-  // Border and divider
-  border: '#374151',
-  divider: '#4B5563',
-  
-  // Workout type colors
-  workoutTypes: {
-    longao: '#8B5CF6', // Purple for long runs
-    tiros: '#EF4444', // Red for intervals
-    tempo: '#F59E0B', // Orange for tempo
-    regenerativo: '#10B981', // Green for recovery
-  }
-};
+// Compatibilidade com código existente
+export const ProRunnerColors = Colors;

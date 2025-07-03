@@ -4,19 +4,19 @@ import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { ProRunnerColors } from '@/constants/Colors';
+import { Colors } from '@/constants/Colors';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: ProRunnerColors.primary,
-        tabBarInactiveTintColor: ProRunnerColors.textMuted,
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.text.muted,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: ProRunnerColors.background,
-          borderTopColor: ProRunnerColors.border,
+          backgroundColor: Colors.background.primary,
+          borderTopColor: Colors.ui.border,
           borderTopWidth: 1,
           paddingTop: 8,
           paddingBottom: Platform.OS === 'ios' ? 20 : 8,
@@ -33,10 +33,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="today"
+        name="workout"
         options={{
-          title: 'Hoje',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} />,
+          title: 'Treino',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="figure.run" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="progress"
+        options={{
+          title: 'Progresso',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.line.uptrend.xyaxis" color={color} />,
         }}
       />
       <Tabs.Screen
@@ -47,23 +54,24 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="insights"
-        options={{
-          title: 'Insights',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.line.uptrend.xyaxis" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
         }}
       />
+      
+      {/* Telas ocultas da navegação principal */}
       <Tabs.Screen
-        name="progress"
+        name="today"
         options={{
-          href: null, // Hide from tab bar - will be accessible via navigation
+          href: null, // Hide from tab bar - deprecated
+        }}
+      />
+      <Tabs.Screen
+        name="insights"
+        options={{
+          href: null, // Hide from tab bar - deprecated
         }}
       />
     </Tabs>

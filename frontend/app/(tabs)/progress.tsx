@@ -455,6 +455,7 @@ export default function ProgressScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background.primary,
   },
   scrollView: {
     flex: 1,

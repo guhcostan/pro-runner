@@ -214,6 +214,24 @@ export default function HomeScreen() {
           </Text>
         </View>
 
+        {/* Quick Weather Card */}
+        <Card variant="outlined" margin="small" padding="small">
+          <View style={styles.quickWeatherContainer}>
+            <View style={styles.quickWeatherIcon}>
+              <Ionicons name="partly-sunny" size={20} color={Colors.status.warning} />
+            </View>
+            <Text style={[styles.quickWeatherText, { color: isDark ? Colors.dark.text : Colors.light.text }]}>
+              22°C • Ideal para corrida
+            </Text>
+            <TouchableOpacity 
+              style={styles.quickWeatherButton}
+              onPress={() => router.push('/(tabs)/workout')}
+            >
+              <Ionicons name="chevron-forward" size={16} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
+        </Card>
+
         {/* Card de Progresso XP */}
         {userProgress && (
           <Card variant="elevated" margin="small">
@@ -542,5 +560,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 16,
+  },
+  // Quick Weather styles
+  quickWeatherContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  quickWeatherIcon: {
+    marginRight: 8,
+  },
+  quickWeatherText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  quickWeatherButton: {
+    padding: 4,
   },
 });
